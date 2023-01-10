@@ -55,3 +55,26 @@ class FiniteFunction:
         return f.source == g.source \
            and f.target == g.target \
            and np.all(f.table) == np.all(g.table)
+
+    ################################################################################
+    # FiniteFunction has initial objects and coproducts
+    @staticmethod
+    def initial(b, dtype=DTYPE):
+        return FiniteFunction(b, np.zeros(0, dtype=DTYPE))
+
+    def inj0(a, b):
+        table = np.arange(0, a, dtype=DTYPE)
+        return FiniteFunction(a + b, table)
+
+    def inj1(a, b):
+        table = np.arange(a, a + b, dtype=DTYPE)
+        return FiniteFunction(a + b, table)
+
+    def coproduct(f, g):
+        assert f.target == g.target
+        target = f.target
+        table = np.concatenate([f.table, g.table])
+        return FiniteFunction(target, table)
+
+    def __add__(f, g):
+        return f.coproduct(g)
