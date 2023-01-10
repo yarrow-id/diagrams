@@ -74,3 +74,31 @@ def test_coproduct_commutes(fg):
 
     assert (i0 >> (f + g)) == f
     assert (i1 >> (f + g)) == g
+
+################################################################################
+# (Strict) symmetric monoidal tests
+
+@given(f=finite_functions(), g=finite_functions())
+def test_tensor_vs_injections(f, g):
+    """ Verify that the tensor product corresponds to its definition in terms of
+    coproducts and injections """
+    i0 = FiniteFunction.inj0(f.target, g.target)
+    i1 = FiniteFunction.inj1(f.target, g.target)
+
+    f @ g == (f >> i0) + (g >> i1)
+
+@given(a=objects, b=objects)
+def test_twist_inverse(a, b):
+    """ Check the law σ ; σ = id """
+    f = FiniteFunction.twist(a, b)
+    g = FiniteFunction.twist(b, a)
+    identity = FiniteFunction.identity(a + b)
+    assert f >> g == identity
+    assert g >> f == identity
+
+@given(f=finite_functions(), g=finite_functions())
+def test_twist_naturality(f, g):
+    """ Check naturality of σ, so that (f @ g) ; σ = σ ; (f @ g) """
+    pre_twist  = FiniteFunction.twist(g.source, f.source)
+    post_twist = FiniteFunction.twist(f.target, g.target)
+    assert (f @ g) >> post_twist == pre_twist >> (g @ f)

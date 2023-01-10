@@ -1,6 +1,6 @@
 import numpy as np
 
-DTYPE=int
+DTYPE='int64'
 
 class FiniteFunction:
     def __init__(self, target, table, dtype=DTYPE):
@@ -78,3 +78,27 @@ class FiniteFunction:
 
     def __add__(f, g):
         return f.coproduct(g)
+
+    ################################################################################
+    # FiniteFunction as a strict symmetric monoidal category
+    @staticmethod
+    def unit():
+        return 0
+
+    def tensor(f, g):
+        # The tensor (f @ g) is the same as (f;ι₀) + (g;ι₁)
+        # however, we compute it directly for the sake of efficiency
+        table = np.concatenate([f.table, g.table + f.target])
+        return FiniteFunction(f.target + g.target, table)
+
+    def __matmul__(f, g):
+        return f.tensor(g)
+
+    @staticmethod
+    def twist(a, b):
+        # Read a permutation as the array whose ith position denotes "where to send" value i.
+        # e.g., twist_{2, 3} = [3 4 0 1 2]
+        #       twist_{2, 1} = [1 2 0]
+        #       twist_{0, 2} = [0 1]
+        table = np.concatenate([b + np.arange(0, a), np.arange(0, b)])
+        return FiniteFunction(a + b, table)
