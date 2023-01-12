@@ -79,3 +79,12 @@ def composite_coproduct(draw, source=None, target=None):
     g = draw(finite_functions(source=a2, target=target))
 
     return f, g
+
+@st.composite
+def parallel_arrows(draw, source=None, target=None):
+    source, target = draw(arrow_type(source, target))
+    assert _is_valid_arrow_type(source, target)
+
+    f = draw(finite_functions(source=source, target=target))
+    g = draw(finite_functions(source=source, target=target))
+    return f, g

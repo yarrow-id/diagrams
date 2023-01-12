@@ -1,4 +1,4 @@
-import numpy as np
+import yarrow.array.numpy as numpy
 
 DTYPE='int64'
 
@@ -108,6 +108,24 @@ class AbstractFiniteFunction:
         table = cls._Array.concatenate([b + cls._Array.arange(0, a), cls._Array.arange(0, b)])
         return FiniteFunction(a + b, table)
 
+    ################################################################################
+    # Coequalizers for FiniteFunction
+    def coequalizer(f, g):
+        if f.type != g.type:
+            raise ValueError(
+                f"cannot coequalize arrows {f} and {g} of different types: {f.type} != {g.type}")
+
+        # connected_components returns:
+        #   c: number of components
+        #   cc_ix: connected components index
+        # For the latter we have that
+        #   * if f.table[i] == g.table[i]
+        #   * then cc_ix[f.table[i]] == cc_ix[g.table[i]]
+        # NOTE: we have to pass f.target
+        c, cc_ix = type(f)._Array.connected_components(f.table, g.table, f.target)
+        return FiniteFunction(c, cc_ix)
+
+
 class FiniteFunction(AbstractFiniteFunction):
     """ Finite functions backed by numpy arrays """
-    _Array = np
+    _Array = numpy

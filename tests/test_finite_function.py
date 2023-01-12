@@ -102,3 +102,11 @@ def test_twist_naturality(f, g):
     pre_twist  = FiniteFunction.twist(g.source, f.source)
     post_twist = FiniteFunction.twist(f.target, g.target)
     assert (f @ g) >> post_twist == pre_twist >> (g @ f)
+
+################################################################################
+# Test coequalizers
+@given(fg=parallel_arrows())
+def test_coequalizer_commutes(fg):
+    f, g = fg
+    c = f.coequalizer(g)
+    assert (f >> c) == (g >> c)
