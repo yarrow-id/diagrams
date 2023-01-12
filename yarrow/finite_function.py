@@ -2,9 +2,12 @@ import numpy as np
 
 DTYPE='int64'
 
-class FiniteFunction:
+class AbstractFiniteFunction:
+    """ Define a class of finite functions parametrised over the underlying array type. """
     def __init__(self, target, table, dtype=DTYPE):
-        self.table = np.array(table, dtype=dtype)
+        # _Array is the "array functions module"
+        # It lets us parametrise AbstractFiniteFunction by a module like "numpy".
+        self.table = type(self)._Array.array(table, dtype=dtype)
         self.source = len(table)
         self.target = target
 
@@ -12,7 +15,7 @@ class FiniteFunction:
         assert self.source >= 0
         if self.source > 0:
             assert self.target >= 0
-            assert self.target > np.max(table)
+            assert self.target > type(self)._Array.max(table)
     
     def __str__(self):
         return f'{self.table} : {self.source} → {self.target}'
@@ -27,10 +30,10 @@ class FiniteFunction:
     ################################################################################
     # FiniteFunction forms a category
 
-    @staticmethod
-    def identity(n):
+    @classmethod
+    def identity(cls, n):
         assert n >= 0
-        return FiniteFunction(n, np.arange(0, n, dtype=DTYPE))
+        return FiniteFunction(n, cls._Array.arange(0, n, dtype=DTYPE))
 
     # Compute (f ; g), i.e., the function x → g(f(x))
     def compose(f, g):
@@ -54,26 +57,28 @@ class FiniteFunction:
     def __eq__(f, g):
         return f.source == g.source \
            and f.target == g.target \
-           and np.all(f.table) == np.all(g.table)
+           and type(f)._Array.all(f.table) == type(g)._Array.all(g.table)
 
     ################################################################################
     # FiniteFunction has initial objects and coproducts
-    @staticmethod
-    def initial(b, dtype=DTYPE):
-        return FiniteFunction(b, np.zeros(0, dtype=DTYPE))
+    @classmethod
+    def initial(cls, b, dtype=DTYPE):
+        return FiniteFunction(b, cls._Array.zeros(0, dtype=DTYPE))
 
-    def inj0(a, b):
-        table = np.arange(0, a, dtype=DTYPE)
+    @classmethod
+    def inj0(cls, a, b):
+        table = cls._Array.arange(0, a, dtype=DTYPE)
         return FiniteFunction(a + b, table)
 
-    def inj1(a, b):
-        table = np.arange(a, a + b, dtype=DTYPE)
+    @classmethod
+    def inj1(cls, a, b):
+        table = cls._Array.arange(a, a + b, dtype=DTYPE)
         return FiniteFunction(a + b, table)
 
     def coproduct(f, g):
         assert f.target == g.target
         target = f.target
-        table = np.concatenate([f.table, g.table])
+        table = type(f)._Array.concatenate([f.table, g.table])
         return FiniteFunction(target, table)
 
     def __add__(f, g):
@@ -88,17 +93,21 @@ class FiniteFunction:
     def tensor(f, g):
         # The tensor (f @ g) is the same as (f;ι₀) + (g;ι₁)
         # however, we compute it directly for the sake of efficiency
-        table = np.concatenate([f.table, g.table + f.target])
+        table = type(f)._Array.concatenate([f.table, g.table + f.target])
         return FiniteFunction(f.target + g.target, table)
 
     def __matmul__(f, g):
         return f.tensor(g)
 
-    @staticmethod
-    def twist(a, b):
+    @classmethod
+    def twist(cls, a, b):
         # Read a permutation as the array whose ith position denotes "where to send" value i.
         # e.g., twist_{2, 3} = [3 4 0 1 2]
         #       twist_{2, 1} = [1 2 0]
         #       twist_{0, 2} = [0 1]
-        table = np.concatenate([b + np.arange(0, a), np.arange(0, b)])
+        table = cls._Array.concatenate([b + cls._Array.arange(0, a), cls._Array.arange(0, b)])
         return FiniteFunction(a + b, table)
+
+class FiniteFunction(AbstractFiniteFunction):
+    """ Finite functions backed by numpy arrays """
+    _Array = np
