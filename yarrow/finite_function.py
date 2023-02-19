@@ -16,12 +16,17 @@ class AbstractFiniteFunction:
         if self.source > 0:
             assert self.target >= 0
             assert self.target > type(self)._Array.max(table)
-    
+
     def __str__(self):
         return f'{self.table} : {self.source} → {self.target}'
 
     def __repr__(self):
         return f'FiniteFunction({self.target}, {self.table})'
+
+    def __call__(self, i: int):
+        if i >= self.source:
+            raise ValueError("Calling {self} with {i} >= source {self.source}")
+        return self.table[i]
 
     @property
     def type(f):
@@ -57,7 +62,7 @@ class AbstractFiniteFunction:
     def __eq__(f, g):
         return f.source == g.source \
            and f.target == g.target \
-           and type(f)._Array.all(f.table) == type(g)._Array.all(g.table)
+           and f._Array.all(f.table == g.table)
 
     ################################################################################
     # FiniteFunction has initial objects and coproducts
@@ -111,6 +116,12 @@ class AbstractFiniteFunction:
     ################################################################################
     # Coequalizers for FiniteFunction
     def coequalizer(f, g):
+        """
+        Given finite functions    f, g : A → B,
+        return the *coequalizer*  c    : B → Q
+        which is the unique arrow such that  f >> c = g >> c
+        """
+
         if f.type != g.type:
             raise ValueError(
                 f"cannot coequalize arrows {f} and {g} of different types: {f.type} != {g.type}")

@@ -9,6 +9,30 @@ import hypothesis.strategies as st
 from tests.strategies import *
 
 ################################################################################
+# Equality
+
+@given(f=finite_functions())
+def test_equality_reflexive(f):
+    assert f == f
+
+@given(fg=parallel_arrows())
+def test_inequality_table(fg):
+    """ Ensure that if the function tables of two FiniteFunctions are different,
+    then == returns false."""
+    f, g = fg
+    if np.any(f.table != g.table):
+        assert f != g
+
+@given(f=finite_functions(), g=finite_functions())
+def test_inequality_type(f, g):
+    """ Ensure that if the function tables of two FiniteFunctions are different,
+    then == returns false."""
+    if f.source != g.source:
+        assert f != g
+    if f.target != g.target:
+        assert f != g
+
+################################################################################
 # Basic tests
 
 # only test small arrays, we don't need to OOM thank you very much
@@ -99,9 +123,9 @@ def test_twist_inverse(a, b):
 @given(f=finite_functions(), g=finite_functions())
 def test_twist_naturality(f, g):
     """ Check naturality of σ, so that (f @ g) ; σ = σ ; (f @ g) """
-    pre_twist  = FiniteFunction.twist(g.source, f.source)
     post_twist = FiniteFunction.twist(f.target, g.target)
-    assert (f @ g) >> post_twist == pre_twist >> (g @ f)
+    pre_twist  = FiniteFunction.twist(f.source, g.source)
+    assert ((f @ g) >> post_twist) == (pre_twist >> (g @ f))
 
 ################################################################################
 # Test coequalizers
