@@ -8,7 +8,6 @@ class AbstractFiniteFunction:
         # _Array is the "array functions module"
         # It lets us parametrise AbstractFiniteFunction by a module like "numpy".
         self.table = type(self)._Array.array(table, dtype=dtype)
-        self.source = len(table)
         self.target = target
 
         assert len(self.table.shape) == 1 # ensure 1D array
@@ -16,6 +15,10 @@ class AbstractFiniteFunction:
         if self.source > 0:
             assert self.target >= 0
             assert self.target > type(self)._Array.max(table)
+
+    @property
+    def source(self):
+        return len(self.table)
 
     def __str__(self):
         return f'{self.table} : {self.source} → {self.target}'
@@ -118,8 +121,8 @@ class AbstractFiniteFunction:
     def coequalizer(f, g):
         """
         Given finite functions    f, g : A → B,
-        return the *coequalizer*  c    : B → Q
-        which is the unique arrow such that  f >> c = g >> c
+        return the *coequalizer*  q    : B → Q
+        which is the unique arrow such that  f >> q = g >> q
         """
 
         if f.type != g.type:
@@ -127,15 +130,31 @@ class AbstractFiniteFunction:
                 f"cannot coequalize arrows {f} and {g} of different types: {f.type} != {g.type}")
 
         # connected_components returns:
-        #   c: number of components
-        #   cc_ix: connected components index
+        #   Q:        number of components
+        #   q: B → Q  map assigning vertices to their component
         # For the latter we have that
         #   * if f.table[i] == g.table[i]
-        #   * then cc_ix[f.table[i]] == cc_ix[g.table[i]]
-        # NOTE: we have to pass f.target
-        c, cc_ix = type(f)._Array.connected_components(f.table, g.table, f.target)
-        return FiniteFunction(c, cc_ix)
+        #   * then q[f.table[i]] == q[g.table[i]]
+        # NOTE: we pass f.target so the size of the sparse adjacency matrix
+        # representing the graph can be computed efficiently; otherwise we'd
+        # have to take a max() of each table.
+        # Q: number of connected components
+        Q, q = type(f)._Array.connected_components(f.table, g.table, f.target)
+        return FiniteFunction(Q, q)
 
+    ################################################################################
+    # FiniteFunction also has cartesian structure which is useful
+    @classmethod
+    def terminal(cls, a, dtype=DTYPE):
+        return FiniteFunction(1, cls._Array.zeros(a, dtype=DTYPE))
+
+    def argsort(f: 'AbstractFiniteFunction'):
+        """
+        Given a finite function                     f : A → B
+        Return the *stable* sorting permutation     p : A → A
+        such that                                   p >> f  is monotonic.
+        """
+        return type(f)(f.source, f._Array.argsort(f.table))
 
 class FiniteFunction(AbstractFiniteFunction):
     """ Finite functions backed by numpy arrays """

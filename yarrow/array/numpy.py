@@ -54,3 +54,6 @@ def connected_components(source, target, n, dtype=DEFAULT_DTYPE):
     # compute & return connected components
     c, cc_ix = sparse.csgraph.connected_components(M)
     return c, cc_ix
+
+def argsort(x):
+    return np.argsort(x, kind='stable')

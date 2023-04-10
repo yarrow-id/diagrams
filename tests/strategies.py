@@ -90,12 +90,20 @@ def parallel_arrows(draw, source=None, target=None):
     return f, g
 
 @st.composite
-def permutation(draw, n=None):
+def parallel_permutations(draw, source=None, target=None):
+    n = draw(objects)
+    assert _is_valid_arrow_type(n, n)
+    p = draw(permutations(n))
+    q = draw(permutations(n))
+    return p, q
+
+@st.composite
+def permutations(draw, n=None):
     if n is None:
         n = draw(objects)
     x = np.arange(0, n, dtype=int)
     np.random.shuffle(x)
-    return x
+    return FiniteFunction(n, x)
 
 @st.composite
 def adapted_function(draw, source=None, target=None):
@@ -103,7 +111,7 @@ def adapted_function(draw, source=None, target=None):
     assert _is_valid_arrow_type(source, target)
 
     f = draw(finite_functions(source=source, target=target))
-    p = draw(permutation(n=source))
-    q = draw(permutation(n=target))
+    p = draw(permutations(n=source))
+    q = draw(permutations(n=target))
 
-    return f, FiniteFunction(source, p), FiniteFunction(target, q)
+    return f, p, q
