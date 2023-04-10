@@ -56,7 +56,7 @@ class BipartiteMultigraph:
     @classmethod
     def empty(cls):
         """ Construct the empty bipartite multigraph with no edges and no nodes """
-        e = cls.Fun.initial(0)
+        e = cls._Fun.initial(0)
         return BipartiteMultigraph(e, e, e, e, e, e, e, e)
 
     @classmethod
@@ -73,10 +73,10 @@ class BipartiteMultigraph:
 
         return cls(
             # There are no edges, so we make empty maps for all edge data
-            wi = cls.Fun.initial(wn.source),
-            wo = cls.Fun.initial(wn.source),
-            xi = cls.Fun.initial(0),
-            xo = cls.Fun.initial(0),
+            wi = cls._Fun.initial(wn.source),
+            wo = cls._Fun.initial(wn.source),
+            xi = cls._Fun.initial(0),
+            xo = cls._Fun.initial(0),
 
             # TODO: dirty hack alert: None represents any "non-finite" codomain here.
             # In this case, we need edge_data : E → Nat
@@ -84,8 +84,8 @@ class BipartiteMultigraph:
             # This is justified because both these maps factor through some
             # finite function: we just don't know what it is at this point in
             # the code.
-            pi = cls.Fun.initial(None),
-            po = cls.Fun.initial(None),
+            pi = cls._Fun.initial(None),
+            po = cls._Fun.initial(None),
 
             wn = wn, # there are w_label.target wires
             xn = xn, # and no operation nodes
@@ -148,4 +148,4 @@ def universal(q: AbstractFiniteFunction, f: AbstractFiniteFunction):
     return type(f)(target, u)
 
 class NumpyBipartiteMultigraph(BipartiteMultigraph):
-    Fun = FiniteFunction
+    _Fun = FiniteFunction
