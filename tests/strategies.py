@@ -12,26 +12,30 @@ def _is_valid_arrow_type(s, t):
         return s == 0
     return True
 
-# Generate a pair of objects corresponding to the source/target of a morphism.
 @st.composite
 def arrow_type(draw, source=None, target=None):
-    if target == 0 and source != 0:
-        raise ValueError("No arrows exist of type n → 0 for n != 0.")
+    """ Generate a random type of finite function.
+    For example, a type of n → 0 is forbidden.
+    """
+    # User specified both target and source
+    if target is not None and source is not None:
+        if target == 0 and source != 0:
+            raise ValueError("No arrows exist of type n → 0 for n != 0.")
+        return source, target
 
-    if target == None:
-        # if source is nonzero, target cannot be zero.
-        if source is not None and source > 0:
-            target = draw(nonzero_objects)
+    elif source is None:
+        # any target
+        target = target or draw(objects)
+        if target == 0:
+            source = 0
         else:
-            target = draw(objects)
+            source = draw(objects)
 
-    if target == 0:
-        source = 0
-    elif source == None:
-        source = draw(objects)
+        return source, target
 
+    # target is None, but source is not
+    target = draw(nonzero_objects) if source > 0 else draw(objects)
     return source, target
-
 
 # generate a random FiniteFunction
 @st.composite
