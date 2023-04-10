@@ -51,10 +51,10 @@ def test_healthcheck_finite_functions(f):
 
 # Custom strategy for test_discrete_coequalize_wires
 @st.composite
-def coequalizer_and_permutation(draw, source=None, target=None):
+def coequalizer_and_permutation(draw, source=None, target=None, ob=None):
     f, g = draw(parallel_arrows(source, target))
     W = f.target
-    wn   = draw(finite_functions(source=W))
+    wn   = draw(finite_functions(source=W, target=ob))
     print(f'target: {W}')
     print(f'wn    : {wn}')
     xn   = draw(finite_functions(source=0))
@@ -62,14 +62,18 @@ def coequalizer_and_permutation(draw, source=None, target=None):
 
 # Given:
 #   f, g : A → W
-#   wn : W → Z₁
-#   xn : 0 → Z₂
+#   wn : W → 1
+#   xn : 0 → Σ₁
 #   D: discrete(wn, xn)
 #   q = FF.coequalizer(f, g) : wn.source → Q
-@given(cap=coequalizer_and_permutation())
-def test_discrete_coequalize_wires(cap):
+# Ensure that wires can be coequalized.
+# NOTE: This only handles the PROP case when Σ₀ = 1
+@given(cap=coequalizer_and_permutation(ob=1))
+def test_discrete_coequalize_unityped_wires(cap):
     f, g, wn, xn = cap
     q = f.coequalizer(g)
     D = BipartiteMultigraph.discrete(wn, xn)
     E = D.coequalize_wires(q)
     assert E.wn.source == q.target
+
+# TODO: FIXME: Need to test coequalize_wires with genuine label-preserving maps!

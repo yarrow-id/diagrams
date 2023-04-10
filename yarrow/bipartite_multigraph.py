@@ -101,6 +101,14 @@ class AbstractBipartiteMultigraph:
         """
         assert self.wn.source == q.source
         u = universal(q, self.wn)
+
+        # Check that resulting diagram commutes
+        # TODO: this is unnecessary extra computation when the user knows that q is a coequalizer.
+        # Make a flag?
+        Array = type(q)._Array
+        if not (q >> u) == self.wn:
+            raise ValueError(f"Universal morphism doesn't make {q};{u}, {self.wn} commute. Is q really a coequalizer?")
+
         return type(self)(
                 wi=self.wi >> q,
                 wo=self.wo >> q,
