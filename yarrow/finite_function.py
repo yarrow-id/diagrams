@@ -55,10 +55,11 @@ class AbstractFiniteFunction:
 
         source = f.source
         target = g.target
-        # here we use numpy's indexing to compute the composition in parallel
+        # Use array indexing to compute composition in parallel (if applicable
+        # cls._Array backend is used)
         table = g.table[f.table]
 
-        return FiniteFunction(target, table)
+        return type(f)(target, table)
 
     def __rshift__(f, g):
         return f.compose(g)
@@ -76,23 +77,23 @@ class AbstractFiniteFunction:
     # FiniteFunction has initial objects and coproducts
     @classmethod
     def initial(cls, b, dtype=DTYPE):
-        return FiniteFunction(b, cls._Array.zeros(0, dtype=DTYPE))
+        return cls(b, cls._Array.zeros(0, dtype=DTYPE))
 
     @classmethod
     def inj0(cls, a, b):
         table = cls._Array.arange(0, a, dtype=DTYPE)
-        return FiniteFunction(a + b, table)
+        return cls(a + b, table)
 
     @classmethod
     def inj1(cls, a, b):
         table = cls._Array.arange(a, a + b, dtype=DTYPE)
-        return FiniteFunction(a + b, table)
+        return cls(a + b, table)
 
     def coproduct(f, g):
         assert f.target == g.target
         target = f.target
         table = type(f)._Array.concatenate([f.table, g.table])
-        return FiniteFunction(target, table)
+        return type(f)(target, table)
 
     def __add__(f, g):
         return f.coproduct(g)
@@ -106,8 +107,9 @@ class AbstractFiniteFunction:
     def tensor(f, g):
         # The tensor (f @ g) is the same as (f;ι₀) + (g;ι₁)
         # however, we compute it directly for the sake of efficiency
-        table = type(f)._Array.concatenate([f.table, g.table + f.target])
-        return FiniteFunction(f.target + g.target, table)
+        T = type(f)
+        table = T._Array.concatenate([f.table, g.table + f.target])
+        return T(f.target + g.target, table)
 
     def __matmul__(f, g):
         return f.tensor(g)
@@ -119,7 +121,7 @@ class AbstractFiniteFunction:
         #       twist_{2, 1} = [1 2 0]
         #       twist_{0, 2} = [0 1]
         table = cls._Array.concatenate([b + cls._Array.arange(0, a), cls._Array.arange(0, b)])
-        return FiniteFunction(a + b, table)
+        return cls(a + b, table)
 
     ################################################################################
     # Coequalizers for FiniteFunction
@@ -144,14 +146,15 @@ class AbstractFiniteFunction:
         # representing the graph can be computed efficiently; otherwise we'd
         # have to take a max() of each table.
         # Q: number of connected components
-        Q, q = type(f)._Array.connected_components(f.table, g.table, f.target)
-        return FiniteFunction(Q, q)
+        T = type(f)
+        Q, q = T._Array.connected_components(f.table, g.table, f.target)
+        return T(Q, q)
 
     ################################################################################
     # FiniteFunction also has cartesian structure which is useful
     @classmethod
     def terminal(cls, a, dtype=DTYPE):
-        return FiniteFunction(1, cls._Array.zeros(a, dtype=DTYPE))
+        return cls(1, cls._Array.zeros(a, dtype=DTYPE))
 
     def argsort(f: 'AbstractFiniteFunction'):
         """
