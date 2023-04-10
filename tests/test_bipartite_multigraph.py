@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 from yarrow.finite_function import FiniteFunction
-from yarrow.bipartite_multigraph import NumpyBipartiteMultigraph, BipartiteMultigraph, universal
+from yarrow.bipartite_multigraph import BipartiteMultigraph, universal
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -38,12 +38,12 @@ def test_universal_permutation(fgqp):
 
 def test_empty():
     # constructor should run with no errors.
-    NumpyBipartiteMultigraph.empty()
+    BipartiteMultigraph.empty()
 
 @given(wn=finite_functions(), xn=finite_functions(source=0))
 def test_discrete(wn, xn):
     # constructor should run with no errors.
-    NumpyBipartiteMultigraph.discrete(wn, xn)
+    BipartiteMultigraph.discrete(wn, xn)
 
 @given(f=finite_functions(source=2))
 def test_healthcheck_finite_functions(f):
@@ -70,6 +70,6 @@ def coequalizer_and_permutation(draw, source=None, target=None):
 def test_discrete_coequalize_wires(cap):
     f, g, wn, xn = cap
     q = f.coequalizer(g)
-    D = NumpyBipartiteMultigraph.discrete(wn, xn)
+    D = BipartiteMultigraph.discrete(wn, xn)
     E = D.coequalize_wires(q)
     assert E.wn.source == q.target

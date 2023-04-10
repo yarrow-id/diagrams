@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
 
-class BipartiteMultigraph:
+class AbstractBipartiteMultigraph:
     """ The type of bipartite multigraphs, parametrised by cls._Fun, the
     underlying representation of finite functions """
     def __init__(self, wi, wo, xi, xo, wn, pi, po, xn):
@@ -57,7 +57,7 @@ class BipartiteMultigraph:
     def empty(cls):
         """ Construct the empty bipartite multigraph with no edges and no nodes """
         e = cls._Fun.initial(0)
-        return BipartiteMultigraph(e, e, e, e, e, e, e, e)
+        return cls(e, e, e, e, e, e, e, e)
 
     @classmethod
     def discrete(cls, wn: AbstractFiniteFunction, xn: AbstractFiniteFunction):
@@ -101,7 +101,7 @@ class BipartiteMultigraph:
         """
         assert self.wn.source == q.source
         u = universal(q, self.wn)
-        return BipartiteMultigraph(
+        return type(self)(
                 wi=self.wi >> q,
                 wo=self.wo >> q,
                 wn=u,
@@ -147,5 +147,5 @@ def universal(q: AbstractFiniteFunction, f: AbstractFiniteFunction):
     u[q.table] = f.table
     return type(f)(target, u)
 
-class NumpyBipartiteMultigraph(BipartiteMultigraph):
+class BipartiteMultigraph(AbstractBipartiteMultigraph):
     _Fun = FiniteFunction
