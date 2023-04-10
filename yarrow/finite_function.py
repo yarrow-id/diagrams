@@ -3,7 +3,12 @@ import yarrow.array.numpy as numpy
 DTYPE='int64'
 
 class AbstractFiniteFunction:
-    """ Define a class of finite functions parametrised over the underlying array type. """
+    """
+    Define a class of finite functions parametrised over the underlying array type.
+    This class assumes there is an cls._Array member which implements array primitives.
+    For example, cls._Array.max() should compute the max of an array.
+    This way, we can allow for numpy/GPU arrays transparently.
+    """
     def __init__(self, target, table, dtype=DTYPE):
         # _Array is the "array functions module"
         # It lets us parametrise AbstractFiniteFunction by a module like "numpy".

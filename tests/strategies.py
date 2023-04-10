@@ -5,6 +5,7 @@ import hypothesis.strategies as st
 
 # a generator for objects of FinFun
 objects = st.integers(min_value=0, max_value=32)
+nonzero_objects = st.integers(min_value=1, max_value=32)
 
 def _is_valid_arrow_type(s, t):
     if t == 0:
@@ -18,7 +19,11 @@ def arrow_type(draw, source=None, target=None):
         raise ValueError("No arrows exist of type n → 0 for n != 0.")
 
     if target == None:
-        target = draw(objects)
+        # if source is nonzero, target cannot be zero.
+        if source is not None and source > 0:
+            target = draw(nonzero_objects)
+        else:
+            target = draw(objects)
 
     if target == 0:
         source = 0
