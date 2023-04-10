@@ -2,7 +2,7 @@ import numpy as np
 
 import unittest
 from hypothesis import given
-from yarrow.finite_function import FiniteFunction, sorting_permutation
+from yarrow.finite_function import FiniteFunction
 from tests.strategies import adapted_function, finite_functions, permutations, parallel_permutations
 
 # Invert a permutation
