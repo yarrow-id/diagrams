@@ -121,23 +121,32 @@ class AbstractDiagram:
         # x : 1 → Σ₁
         assert xn.source == 1
 
-        # wn : A + B → Σ₀
+        # Must be able to take coproduct a + b because
+        #   wn : A + B → Σ₀
         assert a.target == b.target
-        wn = a + b
 
         # wi : A → A + B     wo : B → A + B
         wi = F.inj0(a.source, b.source)
         wo = F.inj1(a.source, b.source)
 
-        # xi : A → 1         xo : B → 1
-        xi = F.terminal(a.source)
-        xo = F.terminal(b.source)
+        G = cls._Graph(
+            wi=wi,
+            wo=wo,
 
-        # pi : A → Nat       po : B → Nat
-        pi = F.identity(a.source)
-        po = F.identity(b.source)
+            # xi : A → 1         xo : B → 1
+            xi = F.terminal(a.source),
+            xo = F.terminal(b.source),
 
-        G = cls._Graph(wi, wo, xi, xo, wn, pi, po, xn)
+            # wn : A + B → Σ₀
+            wn = a + b,
+
+            # pi : A → Nat       po : B → Nat
+            pi = F.identity(a.source),
+            po = F.identity(b.source),
+
+            xn = xn,
+        )
+
         # Note: s=inj0, t=inj1, so we just reuse wi and wo.
         return cls(s=wi, t=wo, G=G)
 
