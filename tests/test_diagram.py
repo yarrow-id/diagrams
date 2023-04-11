@@ -63,13 +63,6 @@ def test_spider(stw, x):
 
 @given(d=spiders())
 def test_dagger_spider(d: Diagram):
-    """ Given a random cospan
-          s   t
-        A → W ← B
-    And a labeling
-        w : W → Σ₀
-    Generates a random spider.
-    """
     e = d.dagger()
     assert e.s == d.t
     assert e.t == d.s
@@ -80,3 +73,18 @@ def test_dagger_spider(d: Diagram):
     assert X[1] == Y[0]
 
     assert e.G == d.G
+
+# from hypothesis import settings, reproduce_failure
+# @settings(print_blob=True)
+@given(abx=generator_and_typing())
+def test_singleton(abx):
+    a, b, xn = abx
+    # test constructor works
+    d = Diagram.singleton(a, b, xn)
+    (A, B) = d.type
+    # Type of the diagram should be the same as the chosen typing of the generator.
+    assert a == A
+    assert b == B
+    # The number of internal wires should be equal to the number of ports on the
+    # generator.
+    assert d.wires == a.source + b.source

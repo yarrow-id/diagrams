@@ -128,6 +128,9 @@ def adapted_function(draw, source=None, target=None):
 
     return f, p, q
 
+################################################################################
+# Diagrams
+
 # Draw a cospan
 #   s : A → W
 #   t : B → W
@@ -141,6 +144,40 @@ def labeled_cospans(draw, W=None, Ob=None, A=None, B=None):
 
 @st.composite
 def spiders(draw, W=None, Ob=None, A=None, B=None, Arr=None):
+    """ Given a random cospan
+          s   t
+        A → W ← B
+    And a labeling
+        w : W → Σ₀
+    Generate a random spider.
+    """
     s, t, w = draw(labeled_cospans(W=W, Ob=Ob, A=A, B=B))
+
     x = draw(finite_functions(source=0, target=Arr))
     return Diagram.spider(s, t, w, x)
+
+@st.composite
+def generator_and_typing(draw):
+    """ Generate a random generator
+        x : 1 → Σ₁
+    and its type
+        a : A → Σ₀
+        b : B → Σ₀
+    """
+    # Σ₁ > 0, Σ₀ > 0
+    Arr = draw(nonzero_objects)
+    Obj = draw(nonzero_objects)
+
+    # xn : 1 → Σ₁
+    xn = draw(finite_functions(source=1, target=Arr))
+
+    # Typing
+    a = draw(finite_functions(target=Obj))
+    b = draw(finite_functions(target=Obj))
+
+    return a, b, xn
+
+@st.composite
+def singletons(draw):
+    a, b, xn = draw(generator_and_typing())
+    return Diagram.singleton(a, b, xn)

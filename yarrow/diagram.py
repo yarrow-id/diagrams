@@ -31,7 +31,7 @@ class AbstractDiagram:
         Return the number of 'wires' in the diagram.
         A wire is a node in the graph corresponding to a wire of the string diagram.
         """
-        return self.G.wires
+        return self.G.W
 
     @property
     def shape(self):
@@ -106,7 +106,7 @@ class AbstractDiagram:
         return Diagram(self.t, self.s, self.G)
 
     @classmethod
-    def singleton(cls, a: AbstractFiniteFunction, b: AbstractFiniteFunction, x: AbstractFiniteFunction):
+    def singleton(cls, a: AbstractFiniteFunction, b: AbstractFiniteFunction, xn: AbstractFiniteFunction):
         """ Given a generator x and a typing (A, B)
             x : 1 → Σ₁
             a : A → Σ₀
@@ -116,14 +116,14 @@ class AbstractDiagram:
         F = cls._Fun
         assert F == type(a)
         assert F == type(b)
-        assert F == type(x)
+        assert F == type(xn)
+
+        # x : 1 → Σ₁
+        assert xn.source == 1
 
         # wn : A + B → Σ₀
         assert a.target == b.target
         wn = a + b
-
-        # x : 1 → Σ₁
-        xn = x
 
         # wi : A → A + B     wo : B → A + B
         wi = F.inj0(a.source, b.source)
@@ -138,7 +138,8 @@ class AbstractDiagram:
         po = F.identity(b.source)
 
         G = cls._Graph(wi, wo, xi, xo, wn, pi, po, xn)
-        return cls(wi, wo, G)
+        # Note: s=inj0, t=inj1, so we just reuse wi and wo.
+        return cls(s=wi, t=wo, G=G)
 
 class Diagram(AbstractDiagram):
     """ The default Yarrow diagram type uses numpy-backed finite functions and bipartite multigraphs """
