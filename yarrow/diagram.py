@@ -61,10 +61,84 @@ class AbstractDiagram:
         whose (empty set of) generators are labeled in Σ₁
             xn : 0 → Σ₁
         """
+        assert xn.source == 0
         s = cls._Fun.identity(wn.source)
         t = cls._Fun.identity(wn.source)
         G = cls._Graph.discrete(wn, xn)
         return cls(s, t, G)
+
+    @classmethod
+    def twist(cls, wn_A: AbstractFiniteFunction, wn_B: AbstractFiniteFunction, xn: AbstractFiniteFunction):
+        """
+        Given functions
+            wn_A : A → Σ₀
+            wn_B : B → Σ₀
+            xn   : 0 → Σ₁
+        Return the symmetry diagram of type A ● B → B ● A.
+        """
+        assert xn.source == 0
+        wn = wn_A + wn_B
+        s = cls._Fun.identity(wn.source)
+        t = cls._Fun.twist(wn_A.source, wn_B.source)
+        G = cls._Graph.discrete(wn, xn)
+        return Diagram(s, t, G)
+
+    @classmethod
+    def spider(cls,
+               s: AbstractFiniteFunction,
+               t: AbstractFiniteFunction,
+               w: AbstractFiniteFunction,
+               x: AbstractFiniteFunction):
+        """ Given
+            s : S → W
+            t : T → W
+            w : W → Σ₀
+            x : 0 → Σ₁
+        Construct the Frobenius spider (s, t, Discrete(w))
+        """
+        assert x.source == 0
+        assert w.source == s.target
+        assert w.source == t.target
+        G = cls._Graph.discrete(w, x)
+        return Diagram(s, t, G)
+
+    def dagger(self):
+        return Diagram(self.t, self.s, self.G)
+
+    @classmethod
+    def singleton(cls, a: AbstractFiniteFunction, b: AbstractFiniteFunction, x: AbstractFiniteFunction):
+        """ Given a generator x and a typing (A, B)
+            x : 1 → Σ₁
+            a : A → Σ₀
+            b : B → Σ₀
+        Construct the singleton diagram of x.
+        """
+        F = cls._Fun
+        assert F == type(a)
+        assert F == type(b)
+        assert F == type(x)
+
+        # wn : A + B → Σ₀
+        assert a.target == b.target
+        wn = a + b
+
+        # x : 1 → Σ₁
+        xn = x
+
+        # wi : A → A + B     wo : B → A + B
+        wi = F.inj0(a.source, b.source)
+        wo = F.inj1(a.source, b.source)
+
+        # xi : A → 1         xo : B → 1
+        xi = F.terminal(a.source)
+        xo = F.terminal(b.source)
+
+        # pi : A → Nat       po : B → Nat
+        pi = F.identity(a.source)
+        po = F.identity(b.source)
+
+        G = cls._Graph(wi, wo, xi, xo, wn, pi, po, xn)
+        return cls(wi, wo, G)
 
 class Diagram(AbstractDiagram):
     """ The default Yarrow diagram type uses numpy-backed finite functions and bipartite multigraphs """

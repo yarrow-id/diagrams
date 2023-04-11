@@ -45,10 +45,6 @@ def test_discrete(wn, xn):
     # constructor should run with no errors.
     BipartiteMultigraph.discrete(wn, xn)
 
-@given(f=finite_functions(source=2))
-def test_healthcheck_finite_functions(f):
-    assert (f.target != 0 if f.source != 0 else True)
-
 # Custom strategy for test_discrete_coequalize_wires
 @st.composite
 def coequalizer_and_permutation(draw, source=None, target=None, ob=None):

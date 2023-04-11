@@ -1,6 +1,7 @@
 """ Hypothesis strategies for FiniteFunctions """
 import numpy as np
 from yarrow.finite_function import FiniteFunction
+from yarrow.diagram import Diagram
 import hypothesis.strategies as st
 
 # a generator for objects of FinFun
@@ -25,7 +26,8 @@ def arrow_type(draw, source=None, target=None):
 
     elif source is None:
         # any target
-        target = target or draw(objects)
+        target = draw(objects) if target is None else target
+
         if target == 0:
             source = 0
         else:
@@ -43,13 +45,14 @@ def finite_functions(draw, source=None, target=None):
     source, target = draw(arrow_type(source=source, target=target))
     assert _is_valid_arrow_type(source, target)
 
-    if target == 0:
-        return FiniteFunction(target, np.zeros(0, dtype=int))
-
     # generate a random array of elements in {0, ..., target - 1}
-    assert target > 0
-    elements = st.integers(min_value=0, max_value=target-1)
-    table = draw(st.lists(elements, min_size=source, max_size=source))
+    if target == 0:
+        # FIXME: remove np hardcoding for other backends.
+        table = np.zeros(0, dtype=int)
+    else:
+        elements = st.integers(min_value=0, max_value=target-1)
+        table = draw(st.lists(elements, min_size=source, max_size=source))
+
     return FiniteFunction(target, table)
 
 # Generate exactly n composite functions.
@@ -124,3 +127,20 @@ def adapted_function(draw, source=None, target=None):
     q = draw(permutations(n=target))
 
     return f, p, q
+
+# Draw a cospan
+#   s : A → W
+#   t : B → W
+#   w : W → Σ₀
+@st.composite
+def labeled_cospans(draw, W=None, Ob=None, A=None, B=None):
+    w = draw(finite_functions(source=W, target=Ob))
+    s = draw(finite_functions(source=A, target=w.source))
+    t = draw(finite_functions(source=B, target=w.source))
+    return (s, t, w)
+
+@st.composite
+def spiders(draw, W=None, Ob=None, A=None, B=None, Arr=None):
+    s, t, w = draw(labeled_cospans(W=W, Ob=Ob, A=A, B=B))
+    x = draw(finite_functions(source=0, target=Arr))
+    return Diagram.spider(s, t, w, x)

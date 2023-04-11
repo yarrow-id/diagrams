@@ -91,6 +91,17 @@ class AbstractBipartiteMultigraph:
             xn = xn, # and no operation nodes
         )
 
+    def __eq__(a, b):
+        return \
+            a.wi == b.wi and \
+            a.wo == b.wo and \
+            a.xi == b.xi and \
+            a.xo == b.xo and \
+            a.wn == b.wn and \
+            a.pi == b.pi and \
+            a.po == b.po and \
+            a.xn == b.xn
+
     # Apply a morphism α of bipartite multigraphs whose only
     # non-identity component is α_W = q.
     def coequalize_wires(self, q : AbstractFiniteFunction):
