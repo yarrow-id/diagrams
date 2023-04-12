@@ -99,6 +99,15 @@ def test_coproduct_commutes(fg):
     assert (i0 >> (f + g)) == f
     assert (i1 >> (f + g)) == g
 
+
+@given(f=finite_functions(), b=objects)
+def test_f_cp_inj0_equals_inject0(f, b):
+    assert f >> FiniteFunction.inj0(f.target, b) == f.inject0(b)
+
+@given(f=finite_functions(), a=objects)
+def test_f_cp_inj1_equals_inject0(f, a):
+    assert f >> FiniteFunction.inj1(a, f.target) == f.inject1(a)
+
 ################################################################################
 # (Strict) symmetric monoidal tests
 

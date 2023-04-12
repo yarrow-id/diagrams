@@ -108,3 +108,12 @@ def test_tensor_type(ds):
     assert d.wires == d1.wires + d2.wires
     assert d.G.Ei == d1.G.Ei + d2.G.Ei
     assert d.G.Eo == d1.G.Eo + d2.G.Eo
+
+@given(fg=composite_diagrams())
+def test_compose_type(fg):
+    f, g = fg
+    h = f >> g
+
+    A, B = f.type
+    _, C = g.type
+    assert h.type == (A, C)

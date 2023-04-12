@@ -160,6 +160,18 @@ class AbstractDiagram:
             t = f.t @ g.t,
             G = f.G @ g.G)
 
+    def __matmul__(f, g):
+        return f.tensor(g)
+
+    def compose(f, g):
+        assert f.type[1] == g.type[0]
+        h = f @ g
+        q = f.t.inject0(g.G.W).coequalizer(g.s.inject1(f.G.W))
+        return Diagram(f.s.inject0(g.G.W) >> q, g.t.inject0(f.G.W) >> q, h.G.coequalize_wires(q))
+
+    def __rshift__(f, g):
+        return f.compose(g)
+
 class Diagram(AbstractDiagram):
     """ The default Yarrow diagram type uses numpy-backed finite functions and bipartite multigraphs """
     _Fun = FiniteFunction

@@ -16,3 +16,8 @@ def test_arrow_type_target_zero(AB):
 @given(f=finite_functions(target=0))
 def test_finite_functions_target_zero(f):
     assert f.source == 0
+
+@given(fg=composite_diagrams())
+def test_composite_diagrams(fg):
+    f, g = fg
+    assert f.type[1] == g.type[0]

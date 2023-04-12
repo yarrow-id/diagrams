@@ -58,8 +58,7 @@ def finite_functions(draw, source=None, target=None):
         # FIXME: remove np hardcoding for other backends.
         table = np.zeros(0, dtype=int)
     else:
-        elements = st.integers(min_value=0, max_value=target-1)
-        table = draw(st.lists(elements, min_size=source, max_size=source))
+        table = np.random.randint(0, high=target, size=source)
 
     return FiniteFunction(target, table)
 
@@ -210,6 +209,7 @@ def diagrams(draw, Obj=None, Arr=None):
     # Start with the number of wires in the diagram
     # NOTE: This probably biases generation somehow.
     wn = draw(finite_functions(target=Obj))
+
     if wn.source == 0 or Arr == 0:
         MAX_ARITY = 0
         MAX_COARITY = 0
@@ -261,7 +261,35 @@ def diagrams(draw, Obj=None, Arr=None):
 @st.composite
 def many_diagrams(draw, n):
     """ Generate several diagrams from the same signature """
+    # TODO: allow Obj = 0? Then we can only ever generate the empty diagram, or
+    # maybe only diagrams with generating morphisms of type 0 → 0?
     Obj = draw(nonzero_objects)
     Arr = draw(generators)
     result = []
     return [ draw(diagrams(Obj=Obj, Arr=Arr)) for _ in range(0, n) ]
+
+@st.composite
+def composite_diagrams(draw, max_boundary_size=128):
+    """
+    Generate a composite diagram with a random signature.
+          f ; g
+        A → B → C
+    """
+    # Obj = draw(nonzero_objects)
+    Obj = 1 # Only handle the PROP case for now.
+    Arr = draw(generators)
+
+    # Draw two diagrams with Σ₀ = 1, then change sources + targets to have a
+    # common boundary.
+    f = draw(diagrams(Obj=Obj, Arr=Arr))
+    g = draw(diagrams(Obj=Obj, Arr=Arr))
+
+    if f.wires == 0 or g.wires == 0:
+        B = 0
+    else:
+        B = draw(st.integers(min_value=0, max_value=max_boundary_size))
+
+    f.t = draw(finite_functions(source=B, target=f.wires))
+    g.s = draw(finite_functions(source=B, target=g.wires))
+
+    return f, g

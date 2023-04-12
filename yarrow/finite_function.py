@@ -89,6 +89,22 @@ class AbstractFiniteFunction:
         table = cls._Array.arange(a, a + b, dtype=DTYPE)
         return cls(a + b, table)
 
+    def inject0(f, b):
+        """
+        Directly compute (f ; ι₀) instead of by composition.
+
+            f.inject0(b) := f >> ι₀
+        """
+        return type(f)(f.target + b, f.table)
+
+    def inject1(f, a):
+        """
+        Directly compute (f ; ι₁) instead of by composition.
+
+            f.inject1(a) := f >> ι₁
+        """
+        return type(f)(a + f.target, a + f.table)
+
     def coproduct(f, g):
         assert f.target == g.target
         target = f.target
