@@ -76,6 +76,10 @@ def argsort(x):
 #   i       = [ 0 1   2 3 4     5 6 7 8 9 ]
 #   i - r   = [ 0 1 | 0 1 2 | | 0 1 2 3 4 ]
 # Note: r is computed as repeat(p, n)
+#
+# Complexity
+#   O(n)     sequential
+#   O(log n) PRAM CREW (cumsum is log n)
 def segmented_arange(x):
     """ Given an (ordered) array of segment sizes ,
     output an array of 'runs'

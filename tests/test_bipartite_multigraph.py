@@ -37,7 +37,7 @@ def test_universal_permutation(fgqp):
 # Discrete BPMGs
 
 @given(wn=finite_functions(source=0), xn=finite_functions(source=0))
-def test_empty():
+def test_empty(wn, xn):
     # constructor should run with no errors.
     BipartiteMultigraph.empty(wn, xn)
 

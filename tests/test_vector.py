@@ -40,4 +40,4 @@ def test_segmented_arange(x):
 
     # Check we got the expected number of elements
     assert len(a) == N
-    assert np.all(slow_arange(x) == a)
+    assert np.all(_slow_segmented_arange(x) == a)

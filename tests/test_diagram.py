@@ -15,8 +15,10 @@ def test_empty(wn, xn):
     # Should run without errors
     e = Diagram.empty(wn, xn)
     (A, B) = e.type
-    assert A == FiniteFunction.initial(0)
-    assert B == FiniteFunction.initial(0)
+    assert A == FiniteFunction.initial(wn.target)
+    assert B == FiniteFunction.initial(wn.target)
+    assert e.s == FiniteFunction.initial(0)
+    assert e.t == FiniteFunction.initial(0)
 
 @given(wn=finite_functions(), xn=finite_functions(source=0))
 def test_identity(wn: FiniteFunction, xn: FiniteFunction):
