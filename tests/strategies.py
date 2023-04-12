@@ -1,11 +1,19 @@
 """ Hypothesis strategies for FiniteFunctions """
 import numpy as np
+from yarrow.array import numpy
 from yarrow.finite_function import FiniteFunction
+from yarrow.bipartite_multigraph import BipartiteMultigraph
 from yarrow.diagram import Diagram
 import hypothesis.strategies as st
 
+_MAX_GENERATORS = 32
+_MAX_OBJECTS = 32
+
+# generator for finite sets Σ₁
+generators = st.integers(min_value=0, max_value=_MAX_GENERATORS)
+
 # a generator for objects of FinFun
-objects = st.integers(min_value=0, max_value=32)
+objects = st.integers(min_value=0, max_value=_MAX_OBJECTS)
 nonzero_objects = st.integers(min_value=1, max_value=32)
 
 def _is_valid_arrow_type(s, t):
@@ -181,3 +189,79 @@ def generator_and_typing(draw):
 def singletons(draw):
     a, b, xn = draw(generator_and_typing())
     return Diagram.singleton(a, b, xn)
+
+@st.composite
+def diagrams(draw, Obj=None, Arr=None):
+    """ Generate a random diagram.
+    Since we're also generating a random signature,
+    we only need to ensure that ports are correct.
+    """
+    Array = numpy
+
+    # Σ₀ > 0    Σ₁ ≥ 0
+    Obj = Obj if Obj is not None else draw(nonzero_objects)
+    Arr = Arr if Arr is not None else draw(objects)
+
+    # max arity, coarity of generators.
+    # These get set to 0 if there are no wires in the diagram.
+    MAX_ARITY = None
+    MAX_COARITY = None
+
+    # Start with the number of wires in the diagram
+    # NOTE: This probably biases generation somehow.
+    wn = draw(finite_functions(target=Obj))
+    if wn.source == 0 or Arr == 0:
+        MAX_ARITY = 0
+        MAX_COARITY = 0
+        # return Diagram.empty(wn)
+
+    # 'arities' maps each generator xn(i) to its arity
+    arities   = draw(finite_functions(target=MAX_ARITY))
+    Ei = np.sum(arities.table)
+
+    coarities = draw(finite_functions(source=arities.source, target=MAX_COARITY))
+    Eo = np.sum(coarities.table)
+
+    # Now choose the number of generators and their arity/coarity.
+    xn = draw(finite_functions(source=arities.source, target=Arr))
+
+    # wi : Ei → W
+    # NOTE: Hypothesis builtin strategies really don't like numpy's int64s!
+    wi = draw(finite_functions(source=int(Ei), target=wn.source))
+    wo = draw(finite_functions(source=int(Eo), target=wn.source))
+
+    # pi and po are a 'segmented arange' of the arities and coarities
+    # e.g., [ 3 2 0 5 ] → [ 0 1 2 0 1 0 1 2 3 4 ]
+    pi = FiniteFunction(None, Array.segmented_arange(arities.table))
+    po = FiniteFunction(None, Array.segmented_arange(coarities.table))
+
+    # relatedly, xi and xo are just a repeat:
+    # (TODO: we could inline segmented_arange here and save recomputation of e.g., repeats)
+    # e.g., [ 3 2 0 5 ] → [ 0 0 0 1 1 2 2 2 2 2 ]
+    i = Array.arange(xn.source, dtype=int)
+    xi = FiniteFunction(xn.source, Array.repeat(i, arities.table))
+    xo = FiniteFunction(xn.source, Array.repeat(i, coarities.table))
+
+    G = BipartiteMultigraph(
+            wi=wi,
+            wo=wo,
+
+            xi=xi,
+            xo=xo,
+
+            wn=wn,
+            pi=pi,
+            po=po,
+            xn=xn)
+
+    s = draw(finite_functions(target=wn.source))
+    t = draw(finite_functions(target=wn.source))
+    return Diagram(s, t, G)
+
+@st.composite
+def many_diagrams(draw, n):
+    """ Generate several diagrams from the same signature """
+    Obj = draw(nonzero_objects)
+    Arr = draw(generators)
+    result = []
+    return [ draw(diagrams(Obj=Obj, Arr=Arr)) for _ in range(0, n) ]
