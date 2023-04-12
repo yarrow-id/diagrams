@@ -48,16 +48,26 @@ class AbstractBipartiteMultigraph:
         return self.wn.source
 
     @property
+    def Ei(self):
+        return self.wi.source
+
+    @property
+    def Eo(self):
+        return self.wo.source
+
+    @property
     def X(self):
         """ Returns G(X) """
         # xn : G(X) → Σ₁
         return self.xn.source
 
     @classmethod
-    def empty(cls):
+    def empty(cls, wn, xn):
         """ Construct the empty bipartite multigraph with no edges and no nodes """
+        assert wn.source == 0
+        assert xn.source == 0
         e = cls._Fun.initial(0)
-        return cls(e, e, e, e, e, e, e, e)
+        return cls(e, e, e, e, wn, e, e, xn)
 
     @classmethod
     def discrete(cls, wn: AbstractFiniteFunction, xn: AbstractFiniteFunction):
@@ -101,6 +111,22 @@ class AbstractBipartiteMultigraph:
             a.pi == b.pi and \
             a.po == b.po and \
             a.xn == b.xn
+
+    def coproduct(f, g):
+        """ Coproducts are just pointwise """
+        return BipartiteMultigraph(
+            wi=f.wi @ g.wi,
+            wo=f.wo @ g.wo,
+            xi=f.xi @ g.xi,
+            xo=f.xo @ g.xo,
+            wn=f.wn + g.wn,
+            pi=f.pi + g.pi,
+            po=f.po + g.po,
+            xn=f.xn + g.xn,
+        )
+
+    def __matmul__(f, g):
+        return f.coproduct(g)
 
     # Apply a morphism α of bipartite multigraphs whose only
     # non-identity component is α_W = q.

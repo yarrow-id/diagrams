@@ -10,9 +10,10 @@ from hypothesis import given
 import hypothesis.strategies as st
 from tests.strategies import *
 
-def test_empty():
+@given(wn=finite_functions(source=0), xn=finite_functions(source=0))
+def test_empty(wn, xn):
     # Should run without errors
-    e = Diagram.empty()
+    e = Diagram.empty(wn, xn)
     (A, B) = e.type
     assert A == FiniteFunction.initial(0)
     assert B == FiniteFunction.initial(0)
@@ -74,8 +75,6 @@ def test_dagger_spider(d: Diagram):
 
     assert e.G == d.G
 
-# from hypothesis import settings, reproduce_failure
-# @settings(print_blob=True)
 @given(abx=generator_and_typing())
 def test_singleton(abx):
     a, b, xn = abx
@@ -88,3 +87,22 @@ def test_singleton(abx):
     # The number of internal wires should be equal to the number of ports on the
     # generator.
     assert d.wires == a.source + b.source
+
+@given(ds=many_diagrams(n=2))
+def test_tensor_type(ds):
+    """ Check that the tensor of two diagrams has the correct type and preserves
+    the number of wires and edges """
+    d1, d2 = ds
+
+    d = d1.tensor(d2)
+    S, T = d.type
+
+    S1, T1 = d1.type
+    S2, T2 = d2.type
+
+    # NOTE: types are maps  N → Σ₀, so we take their COPRODUCT!
+    assert S == S1 + S2
+    assert T == T1 + T2
+    assert d.wires == d1.wires + d2.wires
+    assert d.G.Ei == d1.G.Ei + d2.G.Ei
+    assert d.G.Eo == d1.G.Eo + d2.G.Eo

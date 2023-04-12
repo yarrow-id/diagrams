@@ -28,6 +28,12 @@ def zeros(*args, **kwargs):
 def ones(*args, **kwargs):
     return np.ones(*args, **kwargs)
 
+def cumsum(*args, **kwargs):
+    return np.cumsum(*args, **kwargs)
+
+def repeat(*args, **kwargs):
+    return np.repeat(*args, **kwargs)
+
 def concatenate(*args, **kwargs):
     return np.concatenate(*args, **kwargs)
 
@@ -57,3 +63,29 @@ def connected_components(source, target, n, dtype=DEFAULT_DTYPE):
 
 def argsort(x):
     return np.argsort(x, kind='stable')
+
+################################################################################
+# Non-primitive routines (i.e., built out of primitives)
+
+# e.g.,
+#   x       = [ 2 3 0 5 ]
+#   output  = [ 0 1 | 0 1 2 | | 0 1 2 3 4 ]
+# compute ptrs
+#   p       = [ 0 2 5 5 ]
+#   r       = [ 0 0 | 2 2 2 | | 5 5 5 5 5 ]
+#   i       = [ 0 1   2 3 4     5 6 7 8 9 ]
+#   i - r   = [ 0 1 | 0 1 2 | | 0 1 2 3 4 ]
+# Note: r is computed as repeat(p, n)
+def segmented_arange(x):
+    """ Given an (ordered) array of segment sizes ,
+    output an array of 'runs'
+    """
+    x = np.array(x)
+
+    # create segment pointer array
+    ptr = np.zeros(len(x) + 1, dtype=x.dtype)
+    ptr[1:] = np.cumsum(x)
+    N = ptr[-1] # total size
+
+    r = np.repeat(ptr[:-1], x)
+    return np.arange(0, N) - r

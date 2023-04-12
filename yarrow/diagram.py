@@ -48,10 +48,14 @@ class AbstractDiagram:
         return (self.s >> wire_labels, self.t >> wire_labels)
 
     @classmethod
-    def empty(cls):
-        """ The empty diagram """
+    def empty(cls, wn : AbstractFiniteFunction, xn: AbstractFiniteFunction):
+        """ Given a signature
+            wn : 0 → Σ₀
+            xn : 0 → Σ₁
+        Return the empty diagram over that signature.
+        """
         s = t = cls._Fun.initial(0)
-        return cls(s, t, cls._Graph.empty())
+        return cls(s, t, cls._Graph.empty(wn, xn))
 
     @classmethod
     def identity(cls, wn: AbstractFiniteFunction, xn: AbstractFiniteFunction):
@@ -149,6 +153,12 @@ class AbstractDiagram:
 
         # Note: s=inj0, t=inj1, so we just reuse wi and wo.
         return cls(s=wi, t=wo, G=G)
+
+    def tensor(f, g):
+        return Diagram(
+            s = f.s @ g.s,
+            t = f.t @ g.t,
+            G = f.G @ g.G)
 
 class Diagram(AbstractDiagram):
     """ The default Yarrow diagram type uses numpy-backed finite functions and bipartite multigraphs """

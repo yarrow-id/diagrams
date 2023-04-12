@@ -17,7 +17,7 @@ class AbstractFiniteFunction:
 
         assert len(self.table.shape) == 1 # ensure 1D array
         assert self.source >= 0
-        if self.source > 0:
+        if self.source > 0 and self.target is not None:
             assert self.target >= 0
             assert self.target > type(self)._Array.max(table)
 
