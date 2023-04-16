@@ -117,3 +117,17 @@ def test_compose_type(fg):
     A, B = f.type
     _, C = g.type
     assert h.type == (A, C)
+
+@given(fg=composite_diagrams())
+def test_compose_wire_count(fg):
+    """ Check that the number of wires in a composite is within a certain range """
+    f, g = fg
+    h = f >> g
+    # If f has M wires in the boundary, and g has N,
+    # we might quotient M+N → 0.
+    # So wires in the composite f >> g is no more than the composite f @ g,
+    # but greater than or equal to f.W + g.W - (M + N)
+    M = f.t.target
+    N = g.s.target
+    assert h.wires <= (f.wires + g.wires) and \
+           h.wires >= (f.wires + g.wires - (M + N))
