@@ -172,6 +172,8 @@ class AbstractFiniteFunction:
     def terminal(cls, a, dtype=DTYPE):
         return cls(1, cls._Array.zeros(a, dtype=DTYPE))
 
+    ################################################################################
+    # Sorting morphisms
     def argsort(f: 'AbstractFiniteFunction'):
         """
         Given a finite function                     f : A → B
@@ -179,6 +181,52 @@ class AbstractFiniteFunction:
         such that                                   p >> f  is monotonic.
         """
         return type(f)(f.source, f._Array.argsort(f.table))
+
+    ################################################################################
+    # Finite coproducts
+    def injections(s: 'AbstractFiniteFunction', a: 'AbstractFiniteFunction'):
+        """
+        Given a finite function
+
+            s : N → K
+
+        Representing the objects of the coproduct
+
+            Σ_{n ∈ N} s(n)
+
+        Whose injections have the type
+
+            ι_x : s(x) → Σ_{n ∈ N} s(n)
+
+        And given a finite map
+
+            a : A → N
+
+        Compute the coproduct of injections
+
+            injections(s, a) : Σ_{x ∈ A} s(x) → Σ_{n ∈ N} s(n)
+            injections(s, a) = Σ_{x ∈ A} ι_a(x)
+
+        So that
+
+            injections(s, id) == id
+
+        Note also that when a is a permutation,
+        injections(s, a) is a "blockwise" version of that permutation with block
+        sizes equal to s.
+        """
+        # segment pointers
+        Array = a._Array
+
+        # cumsum is inclusive, we need exclusive so we just allocate 1 more space.
+        p = Array.zeros(s.source + 1, dtype=Array.DEFAULT_DTYPE)
+        p[1:] = Array.cumsum(s.table)
+
+        k = a >> s
+        r = Array.segmented_arange(k.table)
+        # NOTE: p[-1] is sum(s).
+        return FiniteFunction(p[-1], r + Array.repeat(p[a.table], k.table))
+
 
 class FiniteFunction(AbstractFiniteFunction):
     """ Finite functions backed by numpy arrays """

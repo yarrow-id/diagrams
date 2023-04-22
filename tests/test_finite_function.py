@@ -143,3 +143,14 @@ def test_coequalizer_commutes(fg):
     f, g = fg
     c = f.coequalizer(g)
     assert (f >> c) == (g >> c)
+
+################################################################################
+# Finite coproducts
+
+@given(s=finite_functions())
+def test_injection_coproduct_identity(s: FiniteFunction):
+    """ Test that
+        ι_0 + ι_1 + ... + ι_N = identity(sum_{i ∈ N} s(i))
+    """
+    i = FiniteFunction.identity(s.source)
+    assert s.injections(i) == FiniteFunction.identity(np.sum(s.table))
