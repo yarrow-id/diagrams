@@ -1,3 +1,4 @@
+from typing import List
 import yarrow.array.numpy as numpy
 
 DTYPE='int64'
@@ -183,6 +184,20 @@ class AbstractFiniteFunction:
         return type(f)(f.source, f._Array.argsort(f.table))
 
     ################################################################################
+    # Sequential-only methods
+    @classmethod
+    def coproduct_list(cls, fs: List['AbstractFiniteFunction'], target=None):
+        """ Compute the coproduct of a list of FiniteFunction """
+        # NOTE: this function is not parallelized!
+        if len(fs) == 0:
+            return cls.initial(0 if target is None else target)
+
+        # all codomains must be equal
+        assert all(f.target == g.target for f, g in zip(fs, fs[:1]))
+        return FiniteFunction(fs[0].target, cls._Array.concatenate([f.table for f in fs]))
+
+
+    ################################################################################
     # Finite coproducts
     def injections(s: 'AbstractFiniteFunction', a: 'AbstractFiniteFunction'):
         """
@@ -222,7 +237,7 @@ class AbstractFiniteFunction:
         p = Array.zeros(s.source + 1, dtype=Array.DEFAULT_DTYPE)
         p[1:] = Array.cumsum(s.table)
 
-        k = a >> s
+        k = a >> s # avoid recomputation
         r = Array.segmented_arange(k.table)
         # NOTE: p[-1] is sum(s).
         return FiniteFunction(p[-1], r + Array.repeat(p[a.table], k.table))

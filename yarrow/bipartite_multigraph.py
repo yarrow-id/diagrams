@@ -115,10 +115,12 @@ class AbstractBipartiteMultigraph:
     def coproduct(f, g):
         """ Coproducts are just pointwise """
         return BipartiteMultigraph(
+            # Tensor product of data
             wi=f.wi @ g.wi,
             wo=f.wo @ g.wo,
             xi=f.xi @ g.xi,
             xo=f.xo @ g.xo,
+            # Coproduct of attributes
             wn=f.wn + g.wn,
             pi=f.pi + g.pi,
             po=f.po + g.po,

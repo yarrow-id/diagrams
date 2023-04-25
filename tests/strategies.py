@@ -100,6 +100,28 @@ def composite_coproduct(draw, source=None, target=None):
     return f, g
 
 @st.composite
+def common_targets(draw, n=None, source=None, target=None):
+    """ Draw a list of random functions with the same target,
+
+        fs[i] : A_i → B
+
+    For i ∈ N, and an indexing function
+
+        x : X → N
+    """
+    n = draw(objects) if n is None else n
+
+    target = draw(objects) if target is None else target
+
+    fs = []
+    for i in range(0, n):
+        source, _ = draw(arrow_type(target=target))
+        fs.append(draw(finite_functions(source=source, target=target)))
+
+    x = draw(finite_functions(target=n))
+    return fs, x
+
+@st.composite
 def parallel_arrows(draw, source=None, target=None):
     source, target = draw(arrow_type(source, target))
     assert _is_valid_arrow_type(source, target)

@@ -31,6 +31,9 @@ def ones(*args, **kwargs):
 def cumsum(*args, **kwargs):
     return np.cumsum(*args, **kwargs)
 
+def sum(*args, **kwargs):
+    return np.sum(*args, **kwargs)
+
 def repeat(*args, **kwargs):
     return np.repeat(*args, **kwargs)
 
@@ -65,7 +68,8 @@ def argsort(x):
     return np.argsort(x, kind='stable')
 
 ################################################################################
-# Non-primitive routines (i.e., built out of primitives)
+# Non-primitive routines (i.e., vector routines built out of primitives)
+# TODO: move these to a separate file.
 
 # e.g.,
 #   x       = [ 2 3 0 5 ]
