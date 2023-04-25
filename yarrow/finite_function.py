@@ -192,9 +192,20 @@ class AbstractFiniteFunction:
         if len(fs) == 0:
             return cls.initial(0 if target is None else target)
 
-        # all codomains must be equal
+        # all targets must be equal
         assert all(f.target == g.target for f, g in zip(fs, fs[:1]))
-        return FiniteFunction(fs[0].target, cls._Array.concatenate([f.table for f in fs]))
+        return cls(fs[0].target, cls._Array.concatenate([f.table for f in fs]))
+
+    @classmethod
+    def tensor_list(cls, fs: List['AbstractFiniteFunction']):
+        if len(fs) == 0:
+            return cls.initial(0)
+
+        targets = cls._Array.array([f.target for f in fs])
+        offsets = cls._Array.zeros(len(targets) + 1, dtype=type(fs[0].source))
+        offsets[1:] = cls._Array.cumsum(targets) # exclusive scan
+        table = cls._Array.concatenate([f.table + offset for f, offset in zip(fs, offsets[:-1])])
+        return FiniteFunction(offsets[-1], table)
 
 
     ################################################################################
@@ -240,7 +251,8 @@ class AbstractFiniteFunction:
         k = a >> s # avoid recomputation
         r = Array.segmented_arange(k.table)
         # NOTE: p[-1] is sum(s).
-        return FiniteFunction(p[-1], r + Array.repeat(p[a.table], k.table))
+        cls = type(s)
+        return cls(p[-1], r + cls._Array.repeat(p[a.table], k.table))
 
 
 class FiniteFunction(AbstractFiniteFunction):

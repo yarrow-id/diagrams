@@ -62,6 +62,14 @@ def finite_functions(draw, source=None, target=None):
 
     return FiniteFunction(target, table)
 
+@st.composite
+def finite_function_lists(draw, n=None, source=None, target=None):
+    """ Draw a small-ish list of N finite functions, and an indexer x : X → N"""
+    n = n if n is not None else draw(objects)
+    fs = [ draw(finite_functions(source=source, target=target)) ]
+    x = draw(finite_functions(target=len(fs)))
+    return fs, x
+
 # Generate exactly n composite functions.
 @st.composite
 def composite_functions(draw, n):

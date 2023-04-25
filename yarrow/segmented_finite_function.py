@@ -76,6 +76,16 @@ class AbstractSegmentedFiniteFunction:
         target = 0 if self.targets.source == 0 else self.targets(0)
         return FiniteFunction(target, self.slice(x).table)
 
+    def tensor(self, x: FiniteFunction):
+        """ sff.coproduct(x) computes an x-indexed *tensor* product of sff """
+        table = self.slice(x).table
+        p = self._Array.zeros(x.source + 1, dtype='int64')
+        # p[1:] = self._Array.cumsum(self.targets.table[x.table])
+        p[1:] = self._Array.cumsum(self.targets.table[x.table])
+        z = self._Array.repeat(p[:-1], self.sources.table[x.table])
+        return FiniteFunction(p[-1], table + z)
+
+
 class SegmentedFiniteFunction(AbstractSegmentedFiniteFunction):
     _Array = numpy
     _Fun   = FiniteFunction
