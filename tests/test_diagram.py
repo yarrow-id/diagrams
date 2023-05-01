@@ -115,7 +115,8 @@ def test_compose_type(fg):
     h = f >> g
 
     A, B = f.type
-    _, C = g.type
+    B2, C = g.type
+    assert B == B2
     assert h.type == (A, C)
 
 @given(fg=composite_diagrams())
