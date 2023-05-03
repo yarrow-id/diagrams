@@ -132,3 +132,33 @@ def test_compose_wire_count(fg):
     N = g.s.target
     assert h.wires <= (f.wires + g.wires) and \
            h.wires >= (f.wires + g.wires - (M + N))
+
+@given(f=diagrams())
+def test_compose_dagger(f):
+    A, B = f.type
+    g = f.dagger()
+    h = f >> g
+
+
+    X, Y = h.type
+    assert X == A
+    assert Y == A
+
+@given(f=singletons())
+def test_compose_singleton_dagger(f):
+    A, B = f.type
+    g = f.dagger()
+    h = f >> g
+
+    X, Y = h.type
+    assert X == A
+    assert Y == A
+
+    # Check that the total number of wires in the result is equal to those of f
+    # and g minus the shared boundary.
+    assert (f.wires + g.wires - (B.source)) == h.wires
+
+    # Since the result is a composition of singletones, we should also expect
+    # that the set of nodes appearing in the image of s is completely disjoint
+    # from t.
+    assert set(h.s.table).isdisjoint(set(h.t.table))
