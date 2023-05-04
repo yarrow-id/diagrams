@@ -2,22 +2,14 @@ import numpy as np
 
 import unittest
 from hypothesis import given
-from yarrow.finite_function import FiniteFunction
+from yarrow.finite_function import FiniteFunction, argsort
 from tests.strategies import adapted_function, finite_functions, permutations, parallel_permutations
+
+from tests.util import sorts
 
 # Invert a permutation
 def invert(p):
-    return FiniteFunction(p.source, np.argsort(p.table, kind='stable'))
-
-# return true if s sorts by f.
-def sorts(s, f, strict=False):
-    y = s >> f
-    if len(y.table) <= 1:
-        return True # arrays of length <= 1 are trivially sorted
-
-    if strict:
-        return np.all(y.table[:-1] < y.table[1:])
-    return np.all(y.table[:-1] <= y.table[1:])
+    return argsort(p)
 
 # Ensure the invert function works(!)
 @given(p=permutations())

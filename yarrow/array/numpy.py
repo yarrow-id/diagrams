@@ -91,9 +91,9 @@ def segmented_arange(x):
     x = np.array(x)
 
     # create segment pointer array
-    ptr = np.zeros(len(x) + 1, dtype=x.dtype)
-    ptr[1:] = np.cumsum(x)
+    ptr = np.zeros(len(x) + 1, dtype=x.dtype) # O(1) PRAM
+    ptr[1:] = np.cumsum(x)                    # O(log x) PRAM
     N = ptr[-1] # total size
 
-    r = np.repeat(ptr[:-1], x)
-    return np.arange(0, N) - r
+    r = np.repeat(ptr[:-1], x) # O(log x) PRAM
+    return np.arange(0, N) - r # O(1)     PRAM

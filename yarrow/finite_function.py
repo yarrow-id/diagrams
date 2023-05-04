@@ -258,3 +258,9 @@ class AbstractFiniteFunction:
 class FiniteFunction(AbstractFiniteFunction):
     """ Finite functions backed by numpy arrays """
     _Array = numpy
+
+def argsort(f: AbstractFiniteFunction):
+    """ Applies a stable 'argsort' to the underlying array of a finite function.
+    When that finite function is a permutation, this inverts it.
+    """
+    return type(f)(f.source, f._Array.argsort(f.table))
