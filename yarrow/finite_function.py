@@ -26,6 +26,12 @@ class AbstractFiniteFunction:
     def source(self):
         return len(self.table)
 
+    def __len__(self):
+        """ Return the source (domain) of a finite function.
+        Sometimes this is clearer when thinking of a finite function as an array.
+        """
+        return len(self.table)
+
     def __str__(self):
         return f'{self.table} : {self.source} → {self.target}'
 

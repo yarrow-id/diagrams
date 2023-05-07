@@ -4,13 +4,22 @@ from yarrow.array import numpy
 from yarrow.finite_function import FiniteFunction
 from yarrow.bipartite_multigraph import BipartiteMultigraph
 from yarrow.diagram import Diagram
+
+from yarrow.segmented.operations import Operations
+from yarrow.segmented.finite_function import SegmentedFiniteFunction
+
 import hypothesis.strategies as st
 
-_MAX_GENERATORS = 32
+# these constants are completely arbitrary, I picked a smallish number I like.
+_MAX_SEGMENT_SIZE = 32
+_MAX_SIGMA_1 = 32
 _MAX_OBJECTS = 32
 
+# generator for arity/coarity of operations
+segment_sizes = st.integers(min_value=0, max_value=_MAX_SEGMENT_SIZE)
+
 # generator for finite sets Σ₁
-generators = st.integers(min_value=0, max_value=_MAX_GENERATORS)
+sigma_1 = st.integers(min_value=0, max_value=_MAX_SIGMA_1)
 
 # a generator for objects of FinFun
 objects = st.integers(min_value=0, max_value=_MAX_OBJECTS)
@@ -294,7 +303,7 @@ def many_diagrams(draw, n):
     # TODO: allow Obj = 0? Then we can only ever generate the empty diagram, or
     # maybe only diagrams with generating morphisms of type 0 → 0?
     Obj = draw(nonzero_objects)
-    Arr = draw(generators)
+    Arr = draw(sigma_1)
     result = []
     return [ draw(diagrams(Obj=Obj, Arr=Arr)) for _ in range(0, n) ]
 
@@ -307,7 +316,7 @@ def composite_diagrams(draw, max_boundary_size=128):
     """
     # Obj = draw(nonzero_objects)
     Obj = 1 # Only handle the PROP case for now.
-    Arr = draw(generators)
+    Arr = draw(sigma_1)
 
     # Draw two diagrams with Σ₀ = 1, then change sources + targets to have a
     # common boundary.
@@ -323,3 +332,51 @@ def composite_diagrams(draw, max_boundary_size=128):
     g.s = draw(finite_functions(source=B, target=g.wires))
 
     return f, g
+
+################################################################################
+# Segmented finite functions
+
+
+# Generate a segmented finite function like the one below
+#   sff
+#       sources: N            → K₀
+#       values : sum(sources) → Σ₀      (= max(targets))
+#       targets: N            → Σ₀      (= const Σ₀+1)
+@st.composite
+def segmented_finite_functions(draw, N=None, Obj=None):
+    N, Obj = draw(arrow_type(source=N, target=Obj))
+
+    sources = draw(finite_functions(source=N))
+    values  = draw(finite_functions(source=np.sum(sources.table), target=Obj))
+
+    # make an array [Σ₀, Σ₀, ... ]
+    targets = FiniteFunction.terminal(N).inject1(Obj)
+
+    return SegmentedFiniteFunction(
+        sources=sources,
+        targets=targets,
+        values=values)
+
+# Generate a tensoring of operations with the following types.
+#   xn         : N            → Σ₁
+#
+#   s_type
+#       sources: N            → K₀
+#       values : sum(sources) → Σ₀      (= max(targets))
+#       targets: N            → Σ₀      (= const Σ₀+1)
+#   t_type
+#       sources: N            → K₁
+#       values : sum(sources) → Σ₀      (= max(targets))
+#       targets: N            → Σ₀      (= const Σ₀+1)
+@st.composite
+def operations(draw):
+    Obj = draw(objects)
+    s_type = draw(segmented_finite_functions(Obj=Obj))
+    t_type = draw(segmented_finite_functions(
+        N=len(s_type.sources),
+        Obj=s_type.values.target))
+
+    N = len(s_type.sources)
+    xn = draw(finite_functions(source=N))
+
+    return Operations(xn, s_type, t_type)

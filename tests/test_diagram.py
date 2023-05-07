@@ -10,6 +10,9 @@ from hypothesis import given
 import hypothesis.strategies as st
 from tests.strategies import *
 
+################################################################################
+# Primitives
+
 @given(wn=finite_functions(source=0), xn=finite_functions(source=0))
 def test_empty(wn, xn):
     # Should run without errors
@@ -90,6 +93,9 @@ def test_singleton(abx):
     # generator.
     assert d.wires == a.source + b.source
 
+################################################################################
+# Tensor
+
 @given(ds=many_diagrams(n=2))
 def test_tensor_type(ds):
     """ Check that the tensor of two diagrams has the correct type and preserves
@@ -108,6 +114,9 @@ def test_tensor_type(ds):
     assert d.wires == d1.wires + d2.wires
     assert d.G.Ei == d1.G.Ei + d2.G.Ei
     assert d.G.Eo == d1.G.Eo + d2.G.Eo
+
+################################################################################
+# Composition
 
 @given(fg=composite_diagrams())
 def test_compose_type(fg):
@@ -158,7 +167,7 @@ def test_compose_singleton_dagger(f):
     # and g minus the shared boundary.
     assert (f.wires + g.wires - (B.source)) == h.wires
 
-    # Since the result is a composition of singletones, we should also expect
+    # Since the result is a composition of singletons, we should also expect
     # that the set of nodes appearing in the image of s is completely disjoint
     # from t.
     assert set(h.s.table).isdisjoint(set(h.t.table))

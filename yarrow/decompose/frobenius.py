@@ -4,6 +4,9 @@ from yarrow.bipartite_multigraph import BipartiteMultigraph
 from yarrow.diagram import Diagram
 
 def frobenius_decomposition(d: Diagram) -> Diagram:
+    """ Given a Diagram, permute its xi, xo, pi, and po maps to be in
+    (generator, port) order.
+    """
     # A Frobenius Decomposition is really just diagram whose edges are put in
     # "generator, port" order.
     # Obtaining the half spiders and tensorings from such a diagram is trivial:

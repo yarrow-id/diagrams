@@ -1,10 +1,16 @@
+from dataclasses import astuple
+
 from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
 from yarrow.bipartite_multigraph import BipartiteMultigraph, AbstractBipartiteMultigraph
+
+# for tensor_operations
+from yarrow.segmented.finite_function import AbstractSegmentedFiniteFunction
+from yarrow.segmented.operations import Operations
 
 class AbstractDiagram:
     """ Defines a class of Diagram implementations parametrised over underlying
     implementations of:
-        * _Fun (finite function) 
+        * _Fun (finite function)
         * _Graph (bipartite multigraph)
     """
     def __init__(self, s, t, G):
@@ -174,6 +180,52 @@ class AbstractDiagram:
 
     def __rshift__(f, g):
         return f.compose(g)
+
+    @classmethod
+    def tensor_operations(cls, ops: Operations):
+        """ Compute the X-fold tensoring of operations
+
+            xn : X → Σ₁
+
+        whose typings are given by the segmented finite functions
+
+            s_type : sum_{i ∈ X} arity(xn(i))   → Σ₀
+            t_type : sum_{i ∈ X} coarity(xn(i)) → Σ₀
+
+        (This is Proposition 4.13 in the paper)
+        """
+        Fun   = cls._Fun
+        Array = Fun._Array
+
+        xn, s_type, t_type = ops.xn, ops.s_type, ops.t_type
+
+        r = Array.arange(0, xn.source)
+        # TODO: FIXME: redundant computation.
+        # we do a sum of s_type/t_type sources, but we already do a cumsum in
+        # segmented_arange, so this is wasted effort!
+        Ki = Array.sum(s_type.sources.table)
+        Ko = Array.sum(t_type.sources.table)
+
+        i0 = Fun.inj0(Ki, Ko)
+        i1 = Fun.inj1(Ki, Ko)
+
+        return cls(
+            s = i0,
+            t = i1,
+            G = Diagram._Graph(
+                xn = xn,
+                # Tensor product of terminal maps
+                # e.g. 1 1 1 | 2 2 | 3 3 3 3 ...
+                xi = Fun(xn.source, Array.repeat(r, s_type.sources.table)),
+                xo = Fun(xn.source, Array.repeat(r, t_type.sources.table)),
+                # Coproduct of ι₀ maps
+                # e.g. 0 1 2 | 0 1 | 0 1 2 3 ...
+                pi = Fun(None, Array.segmented_arange(s_type.sources.table)),
+                po = Fun(None, Array.segmented_arange(t_type.sources.table)),
+                # wires: sources first, then targets
+                wi = i0,
+                wo = i1,
+                wn = s_type.values + t_type.values))
 
 class Diagram(AbstractDiagram):
     """ The default Yarrow diagram type uses numpy-backed finite functions and bipartite multigraphs """

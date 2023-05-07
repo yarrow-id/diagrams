@@ -1,5 +1,5 @@
 from yarrow.finite_function import FiniteFunction
-from yarrow.segmented_finite_function import SegmentedFiniteFunction
+from yarrow.segmented.finite_function import SegmentedFiniteFunction
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -22,9 +22,6 @@ def test_indexed_coproduct(fsx):
     assert actual.source == sum(fs[x(i)].source for i in range(0, x.source))
     assert actual.target == target
 
-# from hypothesis import settings, reproduce_failure
-# @settings(print_blob=True)
-# @reproduce_failure('6.54.1', b'AAABAQI=')
 @given(fsx=finite_function_lists())
 def test_indexed_tensor(fsx):
     """ Test the sequential indexed *tensor* against parallel/vectorised one """
@@ -34,3 +31,27 @@ def test_indexed_tensor(fsx):
     assert actual == expected
     assert actual.source == sum(fs[x(i)].source for i in range(0, x.source))
     assert actual.target == sum(fs[x(i)].target for i in range(0, x.source))
+
+
+################################################################################
+# Segmented operations
+
+@given(ops=operations())
+def test_tensor_operations_type(ops):
+    d = Diagram.tensor_operations(ops)
+
+    A, B = d.type
+    assert A == ops.s_type.values
+    assert B == ops.t_type.values
+
+    # check number of edges and wires in the diagram.
+    # Ei should be equal to total input arity
+    # Eo equal to total output arity
+    # wires = Ei + Eo.
+    Ki = len(ops.s_type.values)
+    Ko = len(ops.t_type.values)
+
+    assert d.G.W  == Ki + Ko
+    assert d.G.Ei == Ki
+    assert d.G.Eo == Ko
+    assert d.G.X  == ops.xn.source
