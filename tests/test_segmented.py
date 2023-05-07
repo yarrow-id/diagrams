@@ -6,8 +6,6 @@ import hypothesis.strategies as st
 
 from tests.strategies import *
 
-from hypothesis import settings, reproduce_failure
-
 @given(fsx=common_targets())
 def test_indexed_coproduct(fsx):
     """ Test the sequential indexed coproduct against parallel/vectorised one """

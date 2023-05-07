@@ -22,8 +22,6 @@ def test_composite_diagrams(fg):
     f, g = fg
     assert f.type[1] == g.type[0]
 
-# from hypothesis import settings, reproduce_failure
-# @settings(print_blob=True)
 @given(sff=segmented_finite_functions())
 def test_segmented_finite_function(sff):
     assert sff.sources.source == sff.targets.source

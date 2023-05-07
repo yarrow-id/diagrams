@@ -25,8 +25,6 @@ def test_frobenius_decomposition_type(c):
     assert A1 == A2
     assert B1 == B2
 
-from hypothesis import settings, reproduce_failure
-@settings(print_blob=True)
 @given(c=diagrams())
 def test_frobenius_decomposition_monotonic(c):
     # Check that components of a Frobenius decomposition are in
