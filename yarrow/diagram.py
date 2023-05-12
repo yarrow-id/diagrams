@@ -40,6 +40,11 @@ class AbstractDiagram:
         return self.G.W
 
     @property
+    def operations(self):
+        """Return the number of generating operations in the diagram."""
+        return self.G.X
+
+    @property
     def shape(self):
         """ Return the arity and coarity of the diagram """
         return self.s.source, self.t.source
@@ -53,12 +58,17 @@ class AbstractDiagram:
         wire_labels = self.G.wn
         return (self.s >> wire_labels, self.t >> wire_labels)
 
+    def __eq__(f, g):
+        return f.s == g.s and f.t == g.t and f.G == g.G
+
     @classmethod
     def empty(cls, wn : AbstractFiniteFunction, xn: AbstractFiniteFunction):
-        """ Given a signature
-            wn : 0 → Σ₀
-            xn : 0 → Σ₁
-        Return the empty diagram over that signature.
+        """ Return the empty diagram for a signature.
+
+        :param `wn : 0 → Σ₀`: A FiniteFunction giving the generating objects
+        :param `xn : 0 → Σ₁`: A FiniteFunction giving the generating operations
+
+        :return: The empty diagram for the monoidal signature (Σ₀, Σ₁)
         """
         s = t = cls._Fun.initial(0)
         return cls(s, t, cls._Graph.empty(wn, xn))

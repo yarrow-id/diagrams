@@ -380,3 +380,24 @@ def operations(draw):
     xn = draw(finite_functions(source=N))
 
     return Operations(xn, s_type, t_type)
+
+@st.composite
+def half_spider(draw, Obj=None):
+    Obj = draw(objects) if Obj is None else Obj
+    wn = draw(finite_functions(target=Obj))
+    f  = draw(finite_functions(target=wn.source))
+    return f, wn
+
+# The functions
+#   f  : A → B
+#   wn : B → Σ₀
+# together give a half-spider, and
+#   F₀~ : Σ₀ → Ω₀*
+#   F₀  : sum(s) → Ω₀
+#   s   : Σ₀ → Nat
+# a segmented array encoding the object map of a (finite) functor.
+@st.composite
+def object_map_and_half_spider(draw):
+    sff = draw(segmented_finite_functions())
+    f, wn = draw(half_spider(Obj=sff.sources.source))
+    return sff, f, wn

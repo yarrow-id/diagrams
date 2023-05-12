@@ -41,3 +41,9 @@ def test_operations(ops):
 
     assert np.sum(s_type.sources.table) == s_type.values.source
     assert np.sum(t_type.sources.table) == t_type.values.source
+
+@given(sff_f_wn=object_map_and_half_spider())
+def test_object_map_and_half_spider(sff_f_wn):
+    sff, f, wn = sff_f_wn
+    assert sff.sources.source == wn.target
+    assert f.target == wn.source

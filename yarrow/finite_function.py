@@ -270,3 +270,12 @@ def argsort(f: AbstractFiniteFunction):
     When that finite function is a permutation, this inverts it.
     """
     return type(f)(f.source, f._Array.argsort(f.table))
+
+def bincount(f: AbstractFiniteFunction):
+    # the bincount of an array
+    #   f : A → B
+    # is a finite function
+    #   g : B → A+1
+    # where
+    #   g(b) = |{b . ∃a. f(a) = b}|
+    return type(f)(len(f)+1, f._Array.bincount(f.table, minlength=f.target))

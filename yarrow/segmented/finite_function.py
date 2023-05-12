@@ -17,8 +17,12 @@ class AbstractSegmentedFiniteFunction:
     # value : Σ_{i ∈ N} size(i) → Nat
     values: AbstractFiniteFunction
 
-
     def __post_init__(self):
+        cls = type(self)
+        assert self.sources._Array == cls._Array
+        assert self.targets._Array == cls._Array
+        assert self.values._Array == cls._Array
+
         # Check that values : Σ_{i ∈ N} n(i)
         assert self._Array.sum(self.sources.table) == self.values.source
 
@@ -34,8 +38,7 @@ class AbstractSegmentedFiniteFunction:
     @classmethod
     def from_list(cls, fs: List['AbstractFiniteFunction']):
         """ Create a SegmentedFiniteFunction from a list of morphisms """
-        # FIXME: tidy!
-        # TODO: do 1 iteration instead of 3
+        # TODO: tidy up. do 1 iteration instead of 3
         sources = cls._Array.array([ f.source for f in fs ])
         targets = cls._Array.array([ f.target for f in fs ])
 

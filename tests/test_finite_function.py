@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from yarrow.finite_function import FiniteFunction
+from yarrow.finite_function import FiniteFunction, bincount
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -154,3 +154,11 @@ def test_injection_coproduct_identity(s: FiniteFunction):
     """
     i = FiniteFunction.identity(s.source)
     assert s.injections(i) == FiniteFunction.identity(np.sum(s.table))
+
+@given(f=finite_functions())
+def test_bincount(f: FiniteFunction):
+    b = bincount(f)
+    assert b.source == f.target
+    assert b.target == f.source+1
+    assert np.all(b.table < len(f)+1)
+    assert np.all(b.table >= 0)

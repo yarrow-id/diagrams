@@ -69,7 +69,7 @@ def argsort(x):
 
 ################################################################################
 # Non-primitive routines (i.e., vector routines built out of primitives)
-# TODO: move these to a separate file.
+# TODO: implement an "asbtract array library" class, inherit faster impls for numpy etc.
 
 # e.g.,
 #   x       = [ 2 3 0 5 ]
@@ -97,3 +97,9 @@ def segmented_arange(x):
 
     r = np.repeat(ptr[:-1], x) # O(log x) PRAM
     return np.arange(0, N) - r # O(1)     PRAM
+
+def bincount(x, *args, **kwargs):
+    return np.bincount(x, *args, **kwargs)
+
+def full(n, x, *args, **kwargs):
+    return np.full(n, x, *args, **kwargs)
