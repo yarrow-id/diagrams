@@ -1,9 +1,9 @@
 """
 A shim around the numpy module that exposes common array operations.
 Note that we don't just expose the numpy module for two reasons:
-    (1) We need an additional function (connected_components)
-    (2) We want to document the underlying primitive functions required of the
-    backing array library.
+
+1. We need an additional function (connected_components)
+2. We want to document the underlying primitive functions required of the backing array library.
 """
 import numpy as np
 import scipy.sparse as sparse

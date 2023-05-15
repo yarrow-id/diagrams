@@ -1,3 +1,33 @@
+""".. _Diagram:
+
+The :py:class:`AbstractDiagram` is the main datastructure of yarrow.
+It represents a string diagram (below left) as a
+*cospan of bipartite multigraphs* (below right)
+
+**TODO: summary on what the information actually is and cospan representation**
+
+A backend-agnostic implementation is contained in the
+:py:class:`AbstractDiagram` type.
+Concrete implementations choose a *backend*, which is an implementation of the classes
+:py:class:`AbstractFiniteFunction` and :py:class:`AbstractBipartiteMultigraph`.
+
+For example, numpy-backed diagrams are implemented by the :py:class:`Diagram` class,
+which inherits :py:class:`AbstractDiagram` and sets two class members:
+
+- `_Fun = yarrow.array.numpy`
+- `_Graph = yarrow.bipartite_multigraph.BipartiteMultigraph`
+
+For more information on backends, see :ref:`backends`.
+
+Summary
+-------
+
+.. autosummary::
+    :template: class.rst
+
+    AbstractDiagram
+    Diagram
+"""
 from dataclasses import astuple
 
 from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
@@ -8,12 +38,27 @@ from yarrow.segmented.finite_function import AbstractSegmentedFiniteFunction
 from yarrow.segmented.operations import Operations
 
 class AbstractDiagram:
-    """ Defines a class of Diagram implementations parametrised over underlying
-    implementations of:
-        * _Fun (finite function)
-        * _Graph (bipartite multigraph)
+    """ Implements diagrams parametrised by an underlying choice of backend.
+    To use this class, inherit from it and set class members:
+
+    - ``_Fun`` (finite functions)
+    - ``_Graph`` (bipartite multigraphs)
+
+    See for example the :py:class:`Diagram` class, which uses numpy-backed arrays.
     """
-    def __init__(self, s, t, G):
+    def __init__(self,
+                 s: AbstractFiniteFunction,
+                 t: AbstractFiniteFunction,
+                 G: AbstractBipartiteMultigraph):
+        """Construct a :py:class:`AbstractDiagram` from a triple ``(s, t, G)``.
+
+        Description
+
+        Args:
+            s: Finite function of type `A → G.W`
+            t: Finite function of type `B → G.W`
+            G: An :py:class:`AbstractBipartiteMultigraph`
+        """
         self.s = s
         self.t = t
         self.G = G
@@ -46,14 +91,17 @@ class AbstractDiagram:
 
     @property
     def shape(self):
-        """ Return the arity and coarity of the diagram """
+        """ Return the arity and coarity of the diagram. """
         return self.s.source, self.t.source
 
     @property
     def type(self):
         """ Return a pair of finite functions representing the type of the morphism.
-            source : self.s.domain → Σ₀
-            target : self.t.domain → Σ₀
+
+        Returns:
+            (tuple): tuple of:
+                source(AbstractFiniteFunction): typed `self.s.domain → Σ₀`
+                target(AbstractFiniteFunction): typed `self.t.domain → Σ₀`
         """
         wire_labels = self.G.wn
         return (self.s >> wire_labels, self.t >> wire_labels)
@@ -63,12 +111,16 @@ class AbstractDiagram:
 
     @classmethod
     def empty(cls, wn : AbstractFiniteFunction, xn: AbstractFiniteFunction):
-        """ Return the empty diagram for a signature.
+        """
+        Args:
+            wn: A FiniteFunction typed `0 → Σ₀`: giving the generating objects
+            xn: A FiniteFunction typed `0 → Σ₁`: giving the generating operations
 
-        :param `wn : 0 → Σ₀`: A FiniteFunction giving the generating objects
-        :param `xn : 0 → Σ₁`: A FiniteFunction giving the generating operations
+        Returns:
+            The empty diagram for the monoidal signature (Σ₀, Σ₁)
 
-        :return: The empty diagram for the monoidal signature (Σ₀, Σ₁)
+        Note that for a non-finite signature, we allow the targets of ``wn`` and
+        ``xn`` to be ``None``.
         """
         s = t = cls._Fun.initial(0)
         return cls(s, t, cls._Graph.empty(wn, xn))
@@ -76,10 +128,12 @@ class AbstractDiagram:
     @classmethod
     def identity(cls, wn: AbstractFiniteFunction, xn: AbstractFiniteFunction):
         """
-        Create the identity diagram with n wires labeled
-            wn : W → Σ₀
-        whose (empty set of) generators are labeled in Σ₁
-            xn : 0 → Σ₁
+        Args:
+            wn: A FiniteFunction typed `W → Σ₀`: giving the generating objects
+            xn: A FiniteFunction typed `0 → Σ₁`: giving the generating operations
+
+        Returns:
+            AbstractDiagram: The identity diagram with `W` wires labeled `wn : W → Σ₀` whose empty set of generators is labeled in Σ₁
         """
         assert xn.source == 0
         s = cls._Fun.identity(wn.source)
@@ -90,11 +144,13 @@ class AbstractDiagram:
     @classmethod
     def twist(cls, wn_A: AbstractFiniteFunction, wn_B: AbstractFiniteFunction, xn: AbstractFiniteFunction):
         """
-        Given functions
-            wn_A : A → Σ₀
-            wn_B : B → Σ₀
-            xn   : 0 → Σ₁
-        Return the symmetry diagram of type A ● B → B ● A.
+        Args:
+            wn_A : typed `A → Σ₀`
+            wn_B : typed `B → Σ₀`
+            xn   : typed `0 → Σ₁`
+
+        Returns:
+            AbstractDiagram: The symmetry diagram `σ : A ● B → B ● A`.
         """
         assert xn.source == 0
         wn = wn_A + wn_B
@@ -109,12 +165,16 @@ class AbstractDiagram:
                t: AbstractFiniteFunction,
                w: AbstractFiniteFunction,
                x: AbstractFiniteFunction):
-        """ Given
-            s : S → W
-            t : T → W
-            w : W → Σ₀
-            x : 0 → Σ₁
-        Construct the Frobenius spider (s, t, Discrete(w))
+        """Create a *Frobenius Spider* (see Definition 2.8, Proposition 4.7 of :cite:p:`dpafsd`).
+
+        Args:
+            s : source map typed `S → W`
+            t : target map typed `T → W`
+            w : wires typed `W → Σ₀`
+            x : empty set of operations `0 → Σ₁`
+
+        Returns:
+            AbstractDiagram: A frobenius spider with `S` inputs and `T` outputs.
         """
         assert x.source == 0
         assert w.source == s.target
@@ -123,15 +183,24 @@ class AbstractDiagram:
         return Diagram(s, t, G)
 
     def dagger(self):
+        """Swap the *source* and *target* maps of the diagram.
+
+        Returns:
+            AbstractDiagram: The dagger functor applied to this diagram.
+        """
         return Diagram(self.t, self.s, self.G)
 
     @classmethod
     def singleton(cls, a: AbstractFiniteFunction, b: AbstractFiniteFunction, xn: AbstractFiniteFunction):
-        """ Given a generator x and a typing (A, B)
-            x : 1 → Σ₁
-            a : A → Σ₀
-            b : B → Σ₀
-        Construct the singleton diagram of x.
+        """ Construct a diagram consisting of a single operation (Definition 4.9, :cite:p:`dpafsd`).
+
+        Args:
+            x: A single operation represented as an AbstractFiniteFunction of type `1 → Σ₁`
+            a: The input type of `x` as a finite function `A → Σ₀`
+            b: The output type of `x` as a finite function `B → Σ₀`
+
+        Returns:
+            AbstractDiagram: a diagram with a single generating operation.
         """
         F = cls._Fun
         assert F == type(a)
@@ -170,16 +239,44 @@ class AbstractDiagram:
         # Note: s=inj0, t=inj1, so we just reuse wi and wo.
         return cls(s=wi, t=wo, G=G)
 
-    def tensor(f, g):
+    def tensor(f: 'AbstractDiagram', g: 'AbstractDiagram'):
+        """Stack one diagram atop another, so `f.tensor(g)` is the diagram
+
+        **TODO: Figure**
+
+        Args:
+            g(AbstractDiagram): An arbitrary diagram
+
+        Returns:
+            AbstractDiagram: The tensor product of this diagram with `g`.
+        """
+
         return Diagram(
             s = f.s @ g.s,
             t = f.t @ g.t,
             G = f.G @ g.G)
 
     def __matmul__(f, g):
+        """ Shorthand for :py:meth:`yarrow.Diagram.tensor`.
+        f @ g == f.tensor(g)
+        """
         return f.tensor(g)
 
-    def compose(f, g):
+    def compose(f: 'AbstractDiagram', g: 'AbstractDiagram'):
+        """Compose this diagram with `g`, so `f.compose(g)` is the diagram
+
+        **TODO: Figure**
+
+        Args:
+            g(AbstractDiagram): An diagram with `g.type[0] == self.type[1]`
+
+        Returns:
+            AbstractDiagram: The tensor product of this diagram with `g`.
+
+        Raises:
+            AssertionError: If `g.type[0] != f.type[1]`
+        """
+
         assert f.type[1] == g.type[0]
         h = f @ g
         q = f.t.inject0(g.G.W).coequalizer(g.s.inject1(f.G.W))
@@ -193,6 +290,7 @@ class AbstractDiagram:
 
     @classmethod
     def tensor_operations(cls, ops: Operations):
+        pass # hide the docstring for now
         """ Compute the X-fold tensoring of operations
 
             xn : X → Σ₁
@@ -238,6 +336,6 @@ class AbstractDiagram:
                 wn = s_type.values + t_type.values))
 
 class Diagram(AbstractDiagram):
-    """ The default Yarrow diagram type uses numpy-backed finite functions and bipartite multigraphs """
+    """ Diagrams with the numpy backend """
     _Fun = FiniteFunction
     _Graph = BipartiteMultigraph
