@@ -1,4 +1,5 @@
-"""All yarrow datastructures are ultimately built from finite functions.
+"""An implementation of finite functions as arrays.
+All yarrow datastructures are ultimately built from finite functions.
 For an overview, see :cite:t:`dpafsd`, Section 2.2.2.
 
 Finite functions can be thought of as a thin wrapper around integer arrays whose

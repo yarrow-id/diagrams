@@ -1,6 +1,7 @@
-""" The internal wiring of string diagrams is represented as bipartite multigraphs,
-whose edge labels are *port numbers*, and whose node labels are either generating objects
-or generating operations.
+"""A representation of the "internal wiring" of string diagrams.
+Bipartite multigraphs have edge labels corresponding to the "ports" of
+operations, and node labels either generating objects or generating operations
+of a signature Σ.
 
 As with other classes, these graphs are implemented with an abstract base class
 :py:class:`AbstractBipartiteMultigraph`,

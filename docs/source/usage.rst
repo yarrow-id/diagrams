@@ -4,5 +4,8 @@ Usage
 Installation
 ------------
 
-.. danger::
-   TODO
+Install with ``pip``:
+
+.. code::
+
+   pip install yarrow-diagrams

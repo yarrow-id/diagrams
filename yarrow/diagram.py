@@ -1,4 +1,4 @@
-""".. _Diagram:
+"""Diagrams are the main datastructure of yarrow, and represent string diagrams.
 
 The :py:class:`AbstractDiagram` is the main datastructure of yarrow.
 It represents a string diagram as a *cospan of bipartite multigraphs*.
