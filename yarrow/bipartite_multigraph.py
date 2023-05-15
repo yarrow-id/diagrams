@@ -14,6 +14,9 @@ class AbstractBipartiteMultigraph:
     """ The type of bipartite multigraphs, parametrised by cls._Fun, the
     underlying representation of finite functions """
     def __init__(self, wi, wo, xi, xo, wn, pi, po, xn):
+        """Create a BipartiteMultigraph from its component finite functions.
+        For more details see :cite:p:`dpafsd`, Section 3.2.
+        """
         # Edge/Wire incidence
         self.wi = wi
         self.wo = wo
