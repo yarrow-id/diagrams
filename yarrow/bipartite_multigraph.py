@@ -1,3 +1,12 @@
+""" The internal wiring of string diagrams is represented as bipartite multigraphs,
+whose edge labels are *port numbers*, and whose node labels are either generating objects
+or generating operations.
+
+As with other classes, these graphs are implemented with an abstract base class
+:py:class:`AbstractBipartiteMultigraph`,
+whose concrete instantiations choose a backend.
+For example, :py:class:`BipartiteMultigraph` are backed by numpy arrays.
+"""
 from dataclasses import dataclass
 from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
 
@@ -43,27 +52,49 @@ class AbstractBipartiteMultigraph:
 
     @property
     def W(self):
-        """ Returns G(W) """
+        """Test
+
+        Returns:
+            G(W)
+        """
         # wn : G(W) → Σ₀
         return self.wn.source
 
     @property
     def Ei(self):
+        """Test
+
+        Returns:
+            The number of *input edges* in the graph
+        """
         return self.wi.source
 
     @property
     def Eo(self):
+        """
+        Returns:
+            The number of *output edges* in the graph
+        """
         return self.wo.source
 
     @property
     def X(self):
-        """ Returns G(X) """
+        """
+        Returns:
+            int: Corresponds to G(X), the number of generating operations in the diagram"""
         # xn : G(X) → Σ₁
         return self.xn.source
 
     @classmethod
     def empty(cls, wn, xn):
-        """ Construct the empty bipartite multigraph with no edges and no nodes """
+        """
+        Args:
+            wn: Finite function typed `0 → Σ₀`
+            xn: Finite function typed `0 → Σ₁`
+
+        Returns:
+            AbstractBipartiteMultigraph: The empty bipartite multigraph with no edges and no nodes.
+        """
         assert wn.source == 0
         assert xn.source == 0
         e = cls._Fun.initial(0)
@@ -73,10 +104,11 @@ class AbstractBipartiteMultigraph:
     def discrete(cls, wn: AbstractFiniteFunction, xn: AbstractFiniteFunction):
         """
         Create the discrete graph of n wires for a given monoidal signature Σ
-        whose maps are all initial except
-            wn : n → Σ₀
-        and we have
-            xn : 0 → Σ₁
+        whose maps are all initial except for `wn`.
+
+        Args:
+            wn: An array of wire labels as a finite function typed `n → Σ₀`
+            xn: The type of operations as an empty finite function typed `0 → Σ₁`
         """
         if xn.source != 0:
             raise ValueError("xn.source != 0")
@@ -113,7 +145,18 @@ class AbstractBipartiteMultigraph:
             a.xn == b.xn
 
     def coproduct(f, g):
-        """ Coproducts are just pointwise """
+        """Compute the coproduct of bipartite multigraphs
+
+        Args:
+            g: an arbitrary AbstractBipartiteMultigraph over the same signature
+
+        Returns:
+            The coproduct ``self + g``.
+        """
+        # check signatures match
+        assert f.wn.target == g.wn.target
+        assert f.xn.target == g.xn.target
+
         return BipartiteMultigraph(
             # Tensor product of data
             wi=f.wi @ g.wi,
@@ -137,6 +180,12 @@ class AbstractBipartiteMultigraph:
         Apply a morphism α of bipartite multigraphs
         whose only non-identity component α_W = q
         for some coequalizer q.
+
+        Args:
+            q: An AbstractFiniteFunction which is a coequalizer.
+
+        Returns:
+            AbstractBipartiteMultigraph: The bipartite multigraph equal to the target of α.
         """
         assert self.wn.source == q.source
         u = universal(q, self.wn)
@@ -195,4 +244,5 @@ def universal(q: AbstractFiniteFunction, f: AbstractFiniteFunction):
     return type(f)(target, u)
 
 class BipartiteMultigraph(AbstractBipartiteMultigraph):
+    """ AbstractBipartiteMultigraphs backed by numpy arrays """
     _Fun = FiniteFunction
