@@ -1,5 +1,5 @@
-yarrow
-======
+API Reference
+=============
 
 Data-parallel algorithms for string diagrams as seen in :cite:t:`dpafsd`.
 

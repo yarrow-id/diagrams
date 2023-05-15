@@ -26,7 +26,15 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinxcontrib.bibtex",
+    "sphinx.ext.napoleon",
 ]
+
+# Include both __init__ docstrings and class docstrings
+# autoclass_content = "both" # the non-napoleon version of this option
+napoleon_include_init_with_doc = True
+
+# Number figures
+numfig = True
 
 # class members should be in the order they are written in the file
 autodoc_member_order = "bysource"
