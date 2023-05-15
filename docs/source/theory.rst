@@ -19,8 +19,9 @@ hypergraphs can be encoded as *cospans of bipartite multigraphs*.
 The key benefit of this encoding is to allow for *data-parallel* algorithms for
 diagrams.
 
-In terms of category theory, a value of type :py:class:`AbstractDiagram` is
-a *morphism in the free symmetric monoidal category presented by a signature Σ*.
+In terms of category theory, a value of type :py:class:`AbstractDiagram` is a
+*morphism of the free symmetric monoidal category presented by the signature Σ + Frob*,
+where Σ is a user-supplied *monoidal signature*.
 
 Differentiability and Optics
 ----------------------------
