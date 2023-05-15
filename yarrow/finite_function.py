@@ -1,3 +1,40 @@
+"""All yarrow datastructures are ultimately built from finite functions.
+For an overview, see :cite:t:`dpafsd`, Section 2.2.2.
+
+Finite functions can be thought of as a thin wrapper around integer arrays whose
+elements are within a specified range.
+Here's an example of contructing a finite function:
+
+>>> print(FiniteFunction(3, [0, 1, 2, 0]))
+[0 1 2 0] : 4 → 3
+
+Mathematically, this represents a function from the set of 4 elements to the set
+of 3 elements, and so its "type" is ``4 → 3``.
+
+There are several constructors for finite functions corresponding to useful
+morphisms in category theory.
+For example, the ``identity`` map is like numpy's ``arange``:
+
+>>> print(FiniteFunction.identity(5))
+[0 1 2 3 4] : 5 → 5
+
+and the ``terminal`` map is an array of zeroes:
+
+>>> print(FiniteFunction.terminal(5))
+[0 0 0 0 0] : 5 → 1
+
+Finite functions form a *symmetric monoidal category*.
+They can be composed sequentially:
+
+>>> print(FiniteFunction.identity(5) >> FiniteFunction.terminal(5))
+[0 0 0 0 0] : 5 → 5
+
+And in parallel:
+
+>>> FiniteFunction.identity(5) @ FiniteFunction.terminal(5)
+FiniteFunction(6, [0 1 2 3 4 5 5 5 5 5])
+"""
+
 from typing import List
 import yarrow.array.numpy as numpy
 
@@ -5,10 +42,9 @@ DTYPE='int64'
 
 class AbstractFiniteFunction:
     """
-    Define a class of finite functions parametrised over the underlying array type.
-    This class assumes there is an cls._Array member which implements array primitives.
-    For example, cls._Array.max() should compute the max of an array.
-    This way, we can allow for numpy/GPU arrays transparently.
+    Finite functions parametrised over the underlying array type (the "backend").
+    This implementation assumes there is a cls._Array member implementing various primitives.
+    For example, cls._Array.sum() should compute the sum of an array.
     """
     def __init__(self, target, table, dtype=DTYPE):
         # _Array is the "array functions module"
@@ -24,10 +60,11 @@ class AbstractFiniteFunction:
 
     @property
     def source(self):
+        """The source (aka "domain") of this finite function"""
         return len(self.table)
 
     def __len__(self):
-        """ Return the source (domain) of a finite function.
+        """Same as self.source.
         Sometimes this is clearer when thinking of a finite function as an array.
         """
         return len(self.table)
@@ -45,18 +82,41 @@ class AbstractFiniteFunction:
 
     @property
     def type(f):
+        """Get the source and target of this finite function.
+
+        Returns:
+            tuple: (f.source, f.target)
+        """
         return f.source, f.target
 
     ################################################################################
     # FiniteFunction forms a category
 
     @classmethod
-    def identity(cls, n):
+    def identity(cls, n: int):
+        """Return the identity finite function of type n → n.
+        Args:
+            n(int): The object of which to return the identity map
+
+        Returns:
+            AbstractFiniteFunction: Identity map at n
+        """
         assert n >= 0
         return FiniteFunction(n, cls._Array.arange(0, n, dtype=DTYPE))
 
     # Compute (f ; g), i.e., the function x → g(f(x))
-    def compose(f, g):
+    def compose(f: 'AbstractFiniteFunction', g: 'AbstractFiniteFunction'):
+        """Compose this finite function with another
+
+        Args:
+            g: A FiniteFunction for which self.target == g.source
+
+        Returns:
+            The composition f ; g.
+
+        Raises:
+            ValueError: if self.target != g.source
+        """
         if f.target != g.source:
             raise ValueError("Can't compose FiniteFunction {f} with {g}: f.source != g.target")
 
@@ -84,15 +144,18 @@ class AbstractFiniteFunction:
     # FiniteFunction has initial objects and coproducts
     @classmethod
     def initial(cls, b, dtype=DTYPE):
+        """Compute the initial map ``? : 0 → b``"""
         return cls(b, cls._Array.zeros(0, dtype=DTYPE))
 
     @classmethod
     def inj0(cls, a, b):
+        """Compute the injection ``ι₀ : a → a + b``"""
         table = cls._Array.arange(0, a, dtype=DTYPE)
         return cls(a + b, table)
 
     @classmethod
     def inj1(cls, a, b):
+        """Compute the injection ``ι₁ : b → a + b``"""
         table = cls._Array.arange(a, a + b, dtype=DTYPE)
         return cls(a + b, table)
 
@@ -100,7 +163,7 @@ class AbstractFiniteFunction:
         """
         Directly compute (f ; ι₀) instead of by composition.
 
-            f.inject0(b) := f >> ι₀
+        >>> f.inject0(b) == f >> ι₀
         """
         return type(f)(f.target + b, f.table)
 
@@ -108,26 +171,35 @@ class AbstractFiniteFunction:
         """
         Directly compute (f ; ι₁) instead of by composition.
 
-            f.inject1(a) := f >> ι₁
+        >>> f.inject1(a) == f >> ι₁
         """
         return type(f)(a + f.target, a + f.table)
 
     def coproduct(f, g):
+        """ Given maps ``f : A₀ → B`` and ``g : A₁ → B``
+        compute the coproduct ``f.coproduct(g) : A₀ + A₁ → B``"""
         assert f.target == g.target
         target = f.target
         table = type(f)._Array.concatenate([f.table, g.table])
         return type(f)(target, table)
 
     def __add__(f, g):
+        """ Inline coproduct """
         return f.coproduct(g)
 
     ################################################################################
     # FiniteFunction as a strict symmetric monoidal category
     @staticmethod
     def unit():
+        """ return the unit object of the category """
         return 0
 
     def tensor(f, g):
+        """ Given maps
+        ``f : A₀ → B₀`` and
+        ``g : A₁ → B₁``
+        compute the *tensor* product
+        ``f.tensor(g) : A₀ + A₁ → B₀ + B₁``"""
         # The tensor (f @ g) is the same as (f;ι₀) + (g;ι₁)
         # however, we compute it directly for the sake of efficiency
         T = type(f)
@@ -150,9 +222,10 @@ class AbstractFiniteFunction:
     # Coequalizers for FiniteFunction
     def coequalizer(f, g):
         """
-        Given finite functions    f, g : A → B,
-        return the *coequalizer*  q    : B → Q
-        which is the unique arrow such that  f >> q = g >> q
+        Given finite functions    ``f, g : A → B``,
+        return the *coequalizer*  ``q    : B → Q``
+        which is the unique arrow such that  ``f >> q = g >> q``
+        having a unique arrow to any other such map.
         """
 
         if f.type != g.type:
@@ -177,15 +250,16 @@ class AbstractFiniteFunction:
     # FiniteFunction also has cartesian structure which is useful
     @classmethod
     def terminal(cls, a, dtype=DTYPE):
+        """ Compute the terminal map ``! : a → 1``. """
         return cls(1, cls._Array.zeros(a, dtype=DTYPE))
 
     ################################################################################
     # Sorting morphisms
     def argsort(f: 'AbstractFiniteFunction'):
         """
-        Given a finite function                     f : A → B
-        Return the *stable* sorting permutation     p : A → A
-        such that                                   p >> f  is monotonic.
+        Given a finite function                     ``f : A → B``
+        Return the *stable* sorting permutation     ``p : A → A``
+        such that                                   ``p >> f``  is monotonic.
         """
         return type(f)(f.source, f._Array.argsort(f.table))
 
@@ -193,7 +267,7 @@ class AbstractFiniteFunction:
     # Sequential-only methods
     @classmethod
     def coproduct_list(cls, fs: List['AbstractFiniteFunction'], target=None):
-        """ Compute the coproduct of a list of FiniteFunction """
+        """ Compute the coproduct of a list of finite functions with a common target """
         # NOTE: this function is not parallelized!
         if len(fs) == 0:
             return cls.initial(0 if target is None else target)
@@ -218,32 +292,23 @@ class AbstractFiniteFunction:
     # Finite coproducts
     def injections(s: 'AbstractFiniteFunction', a: 'AbstractFiniteFunction'):
         """
-        Given a finite function
+        Given a finite function ``s : N → K``
+        representing the objects of the coproduct
+        ``Σ_{n ∈ N} s(n)``
+        whose injections have the type
+        ``ι_x : s(x) → Σ_{n ∈ N} s(n)``,
+        and given a finite map
+        ``a : A → N``,
+        compute the coproduct of injections
 
-            s : N → K
-
-        Representing the objects of the coproduct
-
-            Σ_{n ∈ N} s(n)
-
-        Whose injections have the type
-
-            ι_x : s(x) → Σ_{n ∈ N} s(n)
-
-        And given a finite map
-
-            a : A → N
-
-        Compute the coproduct of injections
+        .. code-block:: text
 
             injections(s, a) : Σ_{x ∈ A} s(x) → Σ_{n ∈ N} s(n)
             injections(s, a) = Σ_{x ∈ A} ι_a(x)
 
-        So that
+        So that ``injections(s, id) == id``
 
-            injections(s, id) == id
-
-        Note also that when a is a permutation,
+        Note that when a is a permutation,
         injections(s, a) is a "blockwise" version of that permutation with block
         sizes equal to s.
         """
@@ -272,6 +337,15 @@ def argsort(f: AbstractFiniteFunction):
     return type(f)(f.source, f._Array.argsort(f.table))
 
 def bincount(f: AbstractFiniteFunction):
+    """ bincount the underlying array of a finite function
+
+    Args:
+        f: A finite function of type ``A → B``
+
+    Returns:
+        AbstractFiniteFunction: A finite function of type ``B → A+1``
+
+    """
     # the bincount of an array
     #   f : A → B
     # is a finite function
