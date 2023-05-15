@@ -1,5 +1,5 @@
 [project]
-name = "yarrow"
+name = "yarrow-diagrams"
 version = "0.0.1"
 authors = [
   { name="Paul Wilson", email="paul@statusfailed.com" }
