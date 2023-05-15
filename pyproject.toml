@@ -18,7 +18,7 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://yarrow.id"
-"Github" = "https://github.com/yarrow-id/yarrow/"
+"Github" = "https://github.com/yarrow-id/diagrams/"
 
 [build-system]
 requires = ["hatchling"]
