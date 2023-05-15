@@ -1,13 +1,25 @@
 """.. _Diagram:
 
 The :py:class:`AbstractDiagram` is the main datastructure of yarrow.
-It represents a string diagram (below left) as a
-*cospan of bipartite multigraphs* (below right)
+It represents a string diagram as a *cospan of bipartite multigraphs*.
+For example, the diagram below left is represented internally below right:
 
-**TODO: summary on what the information actually is and cospan representation**
+.. image:: /string-diagram-side-by-side.svg
+   :scale: 150%
+   :align: center
+   :alt: a string diagram and its representation as a cospan
 
-A backend-agnostic implementation is contained in the
-:py:class:`AbstractDiagram` type.
+This representation (the :py:class:`AbstractDiagram` class) consists of three
+things:
+
+1. An :py:class:`AbstractBipartiteMultigraph` ``G`` (center grey box)
+2. The *source map* ``s``: the dotted arrows from the *left* blue box to the center box
+3. The *target map* ``t``: the dotted arrows from the *right* blue box to the center box
+
+The center box `G` encodes the internal wiring of the diagram, while ``s`` and
+``t`` encode the "dangling wires" on the left and right.
+
+The :py:class:`AbstractDiagram` class is a backend-agnostic implementation.
 Concrete implementations choose a *backend*, which is an implementation of the classes
 :py:class:`AbstractFiniteFunction` and :py:class:`AbstractBipartiteMultigraph`.
 
@@ -240,9 +252,12 @@ class AbstractDiagram:
         return cls(s=wi, t=wo, G=G)
 
     def tensor(f: 'AbstractDiagram', g: 'AbstractDiagram'):
-        """Stack one diagram atop another, so `f.tensor(g)` is the diagram
+        """Stack one diagram atop another, so `f.tensor(g)` is the diagram depicted by
 
-        **TODO: Figure**
+        .. image:: /tensor-f-g.svg
+           :scale: 150%
+           :align: center
+           :alt: a depiction of the tensor product of diagrams
 
         Args:
             g(AbstractDiagram): An arbitrary diagram
@@ -265,10 +280,14 @@ class AbstractDiagram:
     def compose(f: 'AbstractDiagram', g: 'AbstractDiagram'):
         """Compose this diagram with `g`, so `f.compose(g)` is the diagram
 
-        **TODO: Figure**
+        .. image:: /compose-f-g.svg
+           :scale: 150%
+           :align: center
+           :alt: a depiction of the tensor product of diagrams
+
 
         Args:
-            g(AbstractDiagram): An diagram with `g.type[0] == self.type[1]`
+            g(AbstractDiagram): A diagram with `g.type[0] == self.type[1]`
 
         Returns:
             AbstractDiagram: The tensor product of this diagram with `g`.
