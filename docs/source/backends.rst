@@ -3,6 +3,8 @@
 Backends
 ========
 
-All the algorithms of yarrow are ultimately backed by one datatructure: the
-array.
-The implementation of ... is agnostic to this datastructure.
+The implementation of yarrow is *backend-agnostic*.
+Since Diagrams are ultimately backed by *arrays*, a "backend" is just a choice
+of array.
+The default provided backend is based on *numpy*,
+but in the future we intend to add a *cupy* backend.
