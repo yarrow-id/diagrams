@@ -161,7 +161,7 @@ class AbstractBipartiteMultigraph:
         assert f.wn.target == g.wn.target
         assert f.xn.target == g.xn.target
 
-        return BipartiteMultigraph(
+        return type(f)(
             # Tensor product of data
             wi=f.wi @ g.wi,
             wo=f.wo @ g.wo,

@@ -103,7 +103,7 @@ class AbstractFiniteFunction:
             AbstractFiniteFunction: Identity map at n
         """
         assert n >= 0
-        return FiniteFunction(n, cls._Array.arange(0, n, dtype=DTYPE))
+        return cls(n, cls._Array.arange(0, n, dtype=DTYPE))
 
     # Compute (f ; g), i.e., the function x → g(f(x))
     def compose(f: 'AbstractFiniteFunction', g: 'AbstractFiniteFunction'):

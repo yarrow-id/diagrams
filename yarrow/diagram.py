@@ -169,7 +169,7 @@ class AbstractDiagram:
         s = cls._Fun.identity(wn.source)
         t = cls._Fun.twist(wn_A.source, wn_B.source)
         G = cls._Graph.discrete(wn, xn)
-        return Diagram(s, t, G)
+        return cls(s, t, G)
 
     @classmethod
     def spider(cls,
@@ -192,7 +192,7 @@ class AbstractDiagram:
         assert w.source == s.target
         assert w.source == t.target
         G = cls._Graph.discrete(w, x)
-        return Diagram(s, t, G)
+        return cls(s, t, G)
 
     def dagger(self):
         """Swap the *source* and *target* maps of the diagram.
@@ -200,7 +200,7 @@ class AbstractDiagram:
         Returns:
             AbstractDiagram: The dagger functor applied to this diagram.
         """
-        return Diagram(self.t, self.s, self.G)
+        return type(self)(self.t, self.s, self.G)
 
     @classmethod
     def singleton(cls, a: AbstractFiniteFunction, b: AbstractFiniteFunction, xn: AbstractFiniteFunction):
@@ -265,8 +265,7 @@ class AbstractDiagram:
         Returns:
             AbstractDiagram: The tensor product of this diagram with `g`.
         """
-
-        return Diagram(
+        return type(f)(
             s = f.s @ g.s,
             t = f.t @ g.t,
             G = f.G @ g.G)
@@ -299,7 +298,7 @@ class AbstractDiagram:
         assert f.type[1] == g.type[0]
         h = f @ g
         q = f.t.inject0(g.G.W).coequalizer(g.s.inject1(f.G.W))
-        return Diagram(
+        return type(f)(
             s = f.s.inject0(g.G.W) >> q,
             t = g.t.inject1(f.G.W) >> q,
             G = h.G.coequalize_wires(q))
@@ -339,7 +338,7 @@ class AbstractDiagram:
         return cls(
             s = i0,
             t = i1,
-            G = Diagram._Graph(
+            G = cls._Graph(
                 xn = xn,
                 # Tensor product of terminal maps
                 # e.g. 1 1 1 | 2 2 | 3 3 3 3 ...
