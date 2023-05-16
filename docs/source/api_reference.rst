@@ -10,3 +10,4 @@ Data-parallel algorithms for string diagrams as seen in :cite:t:`dpafsd`.
    yarrow.finite_function
    yarrow.bipartite_multigraph
    yarrow.diagram
+   yarrow.array

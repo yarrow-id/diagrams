@@ -18,6 +18,11 @@ Here's a simple string diagram with two operations, ``summary`` and ``divide``.
    A diagram representing a simple program for computing the mean
    of a list of numbers.
 
+Notice that the ``Count`` and ``Sum`` wires are crossed:
+the diagram represents ``Sum / Count`` and **not** ``Count / Sum``.
+Think of operations as having an ordered list of input and output ``ports``,
+in the same way a Python function has an ordered list of *arguments*.
+
 Yarrow represents string diagrams using the Diagram datastructure (see :ref:`yarrow.diagram`).
 This datastructure can also be thought of as a kind of *hypergraph* - see
 :ref:`theory` for more information.
