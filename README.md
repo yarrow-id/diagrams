@@ -21,7 +21,7 @@ In short, the main datastructure of [yarrow][yarrow] is the
 Here's an example of a string diagram depicted graphically:
 
 <p align="center">
-    <img src="./docs/source/mean-background.svg" style="height: 5rem;">
+    <img src="https://yarrow.id/img/mean-background.png" style="height: 5rem;">
 <p>
 
 You could think of this as representing the *syntax* of the following python
