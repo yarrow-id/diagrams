@@ -3,18 +3,27 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
-project = 'yarrow'
-copyright = '2023, Paul Wilson'
-author = 'Paul Wilson'
-
+# -- Setup -----------------------------------------------------
 # Ensure the yarrow module is in the path so autosummary can load it.
 import sys
 from pathlib import Path
 root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(root))
+
+# Mock numpy, scipy, and cupy so sphinx can build docs without installing them
+# as dependencies.
+# See https://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
+from unittest import mock
+MOCK_MODULES = ['numpy', 'scipy', 'scipy.sparse', 'cupy']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.MagicMock()
+
+# -- Project information -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+# Project name etc.
+project = 'yarrow'
+copyright = '2023, Paul Wilson'
+author = 'Paul Wilson'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
