@@ -8,6 +8,8 @@
 and algorithms for string diagrams described in the paper
 [Data-Parallel Algorithms for String Diagrams][yarrow-paper].
 
+# What is yarrow?
+
 For a programmer's overview of what yarrow is for, see
 [the documentation](https://yarrow-diagrams.readthedocs.io/).
 In short, the main datastructure of [yarrow][yarrow] is the
