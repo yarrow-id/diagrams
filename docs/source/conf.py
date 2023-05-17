@@ -14,7 +14,7 @@ sys.path.insert(0, str(root))
 # as dependencies.
 # See https://blog.rtwilson.com/how-to-make-your-sphinx-documentation-compile-with-readthedocs-when-youre-using-numpy-and-scipy/
 from unittest import mock
-MOCK_MODULES = ['numpy', 'scipy', 'scipy.sparse', 'cupy']
+MOCK_MODULES = ['numpy', 'scipy', 'scipy.sparse', 'cupy', 'cupyx', 'cupyx.scipy', 'cupyx.scipy.sparse']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.MagicMock()
 

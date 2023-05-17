@@ -11,3 +11,4 @@ Data-parallel algorithms for string diagrams as seen in :cite:t:`dpafsd`.
    yarrow.bipartite_multigraph
    yarrow.diagram
    yarrow.array
+   yarrow.cupy

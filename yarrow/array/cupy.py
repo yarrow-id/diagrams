@@ -1,4 +1,11 @@
-"""cupy-backed arrays and algorithms."""
+"""A CuPy array backend.
+
+.. danger::
+   **Experimental Module**
+
+   This code is not thoroughly tested.
+   It's included here as a proof-of-concept for GPU acceleration.
+"""
 import cupy as cp
 import cupyx.scipy.sparse as sparse
 from cupyx.scipy.sparse import csgraph

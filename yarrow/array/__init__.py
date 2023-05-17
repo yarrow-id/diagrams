@@ -13,4 +13,5 @@ See :ref:`yarrow.array.numpy` (the default backend) for a list.
     :recursive:
 
     yarrow.array.numpy
+    yarrow.array.cupy
 """
