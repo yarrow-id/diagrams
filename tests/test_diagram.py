@@ -171,3 +171,27 @@ def test_compose_singleton_dagger(f):
     # that the set of nodes appearing in the image of s is completely disjoint
     # from t.
     assert set(h.s.table).isdisjoint(set(h.t.table))
+
+@given(fg=many_singletons(n=2))
+def test_tensor_singletons(fg):
+    f, g = fg
+    A0, B0 = f.type
+    A1, B1 = g.type
+
+    h = f @ g
+    assert h.type == (A0 + A1, B0 + B1)
+
+@given(fg=composite_singletons())
+def test_compose_singletons(fg):
+    """ Explicitly test that singletons can be composed """
+    f, g = fg
+
+    A, B = f.type
+    B_, C = g.type
+    assert B == B_
+
+    h = f >> g
+
+    A_, C_ = h.type
+    assert A == A_
+    assert C == C_

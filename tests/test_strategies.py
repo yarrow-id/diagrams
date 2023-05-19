@@ -22,6 +22,19 @@ def test_composite_diagrams(fg):
     f, g = fg
     assert f.type[1] == g.type[0]
 
+@given(fg=composite_singletons())
+def test_composite_singletons(fg):
+    f, g = fg
+    assert f.operations == 1
+    assert g.operations == 1
+    assert f.type[1] == g.type[0]
+
+@given(fg=many_singletons(n=2))
+def test_many_singletons(fg):
+    f, g = fg
+    assert f.G.wn.target == g.G.wn.target
+    assert f.G.xn.target == g.G.xn.target
+
 @given(sff=segmented_finite_functions())
 def test_segmented_finite_function(sff):
     assert sff.sources.source == sff.targets.source

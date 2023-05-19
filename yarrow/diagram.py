@@ -214,6 +214,7 @@ class AbstractDiagram:
         Returns:
             AbstractDiagram: a diagram with a single generating operation.
         """
+        Array = cls._Fun._Array
         F = cls._Fun
         assert F == type(a)
         assert F == type(b)
@@ -241,9 +242,10 @@ class AbstractDiagram:
             # wn : A + B → Σ₀
             wn = a + b,
 
-            # pi : A → Nat       po : B → Nat
-            pi = F.identity(a.source),
-            po = F.identity(b.source),
+            # pi' : A → Nat       po' : B → Nat
+            # pi = pi';ι          po  = po';ι
+            pi = F(None, Array.arange(a.source)),
+            po = F(None, Array.arange(b.source)),
 
             xn = xn,
         )

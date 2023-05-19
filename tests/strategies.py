@@ -20,6 +20,7 @@ segment_sizes = st.integers(min_value=0, max_value=_MAX_SEGMENT_SIZE)
 
 # generator for finite sets Σ₁
 sigma_1 = st.integers(min_value=0, max_value=_MAX_SIGMA_1)
+nonzero_sigma_1 = st.integers(min_value=1, max_value=_MAX_SIGMA_1)
 
 # a generator for objects of FinFun
 objects = st.integers(min_value=0, max_value=_MAX_OBJECTS)
@@ -203,7 +204,7 @@ def spiders(draw, W=None, Ob=None, A=None, B=None, Arr=None):
     return Diagram.spider(s, t, w, x)
 
 @st.composite
-def generator_and_typing(draw):
+def generator_and_typing(draw, Obj=None, Arr=None):
     """ Generate a random generator
         x : 1 → Σ₁
     and its type
@@ -211,8 +212,8 @@ def generator_and_typing(draw):
         b : B → Σ₀
     """
     # Σ₁ > 0, Σ₀ > 0
-    Arr = draw(nonzero_objects)
-    Obj = draw(nonzero_objects)
+    Arr = draw(nonzero_objects) if Arr is None else Arr
+    Obj = draw(nonzero_objects) if Obj is None else Obj
 
     # xn : 1 → Σ₁
     xn = draw(finite_functions(source=1, target=Arr))
@@ -224,8 +225,8 @@ def generator_and_typing(draw):
     return a, b, xn
 
 @st.composite
-def singletons(draw):
-    a, b, xn = draw(generator_and_typing())
+def singletons(draw, Obj=None, Arr=None):
+    a, b, xn = draw(generator_and_typing(Obj=Obj, Arr=Arr))
     return Diagram.singleton(a, b, xn)
 
 @st.composite
@@ -304,8 +305,14 @@ def many_diagrams(draw, n):
     # maybe only diagrams with generating morphisms of type 0 → 0?
     Obj = draw(nonzero_objects)
     Arr = draw(sigma_1)
-    result = []
     return [ draw(diagrams(Obj=Obj, Arr=Arr)) for _ in range(0, n) ]
+
+@st.composite
+def many_singletons(draw, n):
+    """ Generate several singleton diagrams from the same signature """
+    Obj = draw(objects)
+    Arr = draw(nonzero_sigma_1)
+    return [ draw(singletons(Obj=Obj, Arr=Arr)) for _ in range(0, n) ]
 
 @st.composite
 def composite_diagrams(draw, max_boundary_size=128):
@@ -330,6 +337,31 @@ def composite_diagrams(draw, max_boundary_size=128):
 
     f.t = draw(finite_functions(source=B, target=f.wires))
     g.s = draw(finite_functions(source=B, target=g.wires))
+
+    return f, g
+
+@st.composite
+def composite_singletons(draw, max_boundary_size=128):
+    """
+    Generate a composite diagram with a random signature.
+          f ; g
+        A → B → C
+    where f, g are singleton diagrams.
+    """
+
+    Σ_0 = draw(objects)
+
+    # types of f, g
+    a = draw(finite_functions(target=Σ_0))
+    b = draw(finite_functions(target=Σ_0))
+    c = draw(finite_functions(target=Σ_0))
+
+    # generator labels
+    _, Σ_1 = draw(arrow_type(source=1))
+    xn_f = draw(finite_functions(source=1, target=Σ_1))
+    xn_g = draw(finite_functions(source=1, target=Σ_1))
+    f = Diagram.singleton(a, b, xn_f)
+    g = Diagram.singleton(b, c, xn_g)
 
     return f, g
 
