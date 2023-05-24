@@ -48,16 +48,22 @@ class AbstractFiniteFunction:
     For example, cls._Array.sum() should compute the sum of an array.
     """
     def __init__(self, target, table, dtype=DTYPE):
+        # TODO: this constructor is too complicated; it should be simplified.
         # _Array is the "array functions module"
         # It lets us parametrise AbstractFiniteFunction by a module like "numpy".
-        self.table = type(self)._Array.array(table, dtype=dtype)
+        Array = type(self)._Array
+        if type(table) == Array.Type:
+           self.table = table
+        else:
+            self.table = Array.array(table, dtype=dtype)
+
         self.target = target
 
         assert len(self.table.shape) == 1 # ensure 1D array
         assert self.source >= 0
         if self.source > 0 and self.target is not None:
             assert self.target >= 0
-            assert self.target > type(self)._Array.max(table)
+            assert self.target > Array.max(table)
 
     @property
     def source(self):
@@ -180,6 +186,7 @@ class AbstractFiniteFunction:
         """ Given maps ``f : A₀ → B`` and ``g : A₁ → B``
         compute the coproduct ``f.coproduct(g) : A₀ + A₁ → B``"""
         assert f.target == g.target
+        assert f.table.dtype == g.table.dtype
         target = f.target
         table = type(f)._Array.concatenate([f.table, g.table])
         return type(f)(target, table)

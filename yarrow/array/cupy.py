@@ -12,6 +12,8 @@ from cupyx.scipy.sparse import csgraph
 
 DEFAULT_DTYPE='int64'
 
+Type = cp.ndarray
+
 def array(*args, **kwargs):
     return cp.array(*args, **kwargs)
 

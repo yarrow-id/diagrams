@@ -13,7 +13,11 @@ import scipy.sparse as sparse
 
 DEFAULT_DTYPE='int64'
 
+# The underlying array type used by the module.
+Type = np.ndarray
+
 def array(*args, **kwargs):
+    kwargs.setdefault('dtype', DEFAULT_DTYPE)
     return np.array(*args, **kwargs)
 
 def max(*args, **kwargs):
@@ -26,9 +30,11 @@ def all(*args, **kwargs):
     return np.all(*args, **kwargs)
 
 def zeros(*args, **kwargs):
+    kwargs.setdefault('dtype', DEFAULT_DTYPE)
     return np.zeros(*args, **kwargs)
 
 def ones(*args, **kwargs):
+    kwargs.setdefault('dtype', DEFAULT_DTYPE)
     return np.ones(*args, **kwargs)
 
 def cumsum(*args, **kwargs):
@@ -112,7 +118,7 @@ def segmented_arange(x):
 
         segmented array with segment ``i`` equal to ``arange(i)``.
     """
-    x = np.array(x)
+    x = np.array(x, dtype=DEFAULT_DTYPE)
 
     # create segment pointer array
     ptr = np.zeros(len(x) + 1, dtype=x.dtype) # O(1) PRAM
@@ -126,4 +132,5 @@ def bincount(x, *args, **kwargs):
     return np.bincount(x, *args, **kwargs)
 
 def full(n, x, *args, **kwargs):
+    kwargs.setdefault('dtype', DEFAULT_DTYPE)
     return np.full(n, x, *args, **kwargs)

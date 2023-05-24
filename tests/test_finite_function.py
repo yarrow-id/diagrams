@@ -162,3 +162,33 @@ def test_bincount(f: FiniteFunction):
     assert b.target == f.source+1
     assert np.all(b.table < len(f)+1)
     assert np.all(b.table >= 0)
+
+################################################################################
+# Test functions with None target
+
+@given(fg=composite_coproduct_finite_domain())
+def test_finite_domain_coproduct(fg):
+    f, g = fg
+    A0, B = f.type
+    A1, B_ = g.type
+    assert B == B_
+
+    h = f + g
+    X, Y = h.type
+
+    assert X == A0 + A1
+    assert Y == B
+    assert h.table.dtype == f.table.dtype
+    assert h.table.dtype == g.table.dtype
+
+@given(fg=composite_nonfinite_codomain())
+def test_compose_finite_domain(fg):
+    """ Test composition with functions of non-finite codomain """
+    f, g = fg
+
+    A, B = f.type
+    B_, C = g.type
+    assert B == B_
+
+    h = f >> g
+    assert h.type == (A, C)

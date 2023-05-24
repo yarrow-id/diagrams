@@ -237,7 +237,7 @@ def universal(q: AbstractFiniteFunction, f: AbstractFiniteFunction):
     such that q ; u = f.
     """
     target = f.target
-    u = q._Array.zeros(q.target)
+    u = q._Array.zeros(q.target, dtype=f.table.dtype)
     # TODO: in the below we assume the PRAM CRCW model: multiple writes to the
     # same memory location in the 'u' array can happen in parallel, with an
     # arbitrary write succeeding.

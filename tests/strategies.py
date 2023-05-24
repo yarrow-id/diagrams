@@ -433,3 +433,68 @@ def object_map_and_half_spider(draw):
     sff = draw(segmented_finite_functions())
     f, wn = draw(half_spider(Obj=sff.sources.source))
     return sff, f, wn
+
+
+################################################################################
+# Functions of Finite Domain
+# TODO: these generators are quite hacky and not nice. Refactor!
+
+# A FinFun target is either:
+#   (target: int, dtype=int64)
+#   (None,        dtype=[int64 | object])
+#
+
+@st.composite
+def finite_function_target(draw, target=None, is_inf=None, inf_dtype=None):
+    if target is not None:
+        return False, None
+
+    is_inf = draw(st.booleans()) if is_inf == None else is_inf
+    inf_dtype = draw(st.sampled_from(['int', 'object'])) if inf_dtype is None else inf_dtype
+
+    return is_inf, inf_dtype
+
+@st.composite
+def finite_domain_functions(draw, source=None, target=None, is_inf=None, inf_dtype=None):
+    """ Generate functions of finite domain (possibly infinite codomain!) """
+    is_inf, inf_dtype = draw(finite_function_target(target, is_inf, inf_dtype))
+
+    if is_inf:
+        f = draw(finite_functions(source=source))
+        target = None
+        dtype = inf_dtype # if inf_dtype is not None else draw(st.sampled_from(['int', 'object']))
+        if dtype == 'int':
+            table = f.table
+        else:
+            # TODO: Generate more varied object data
+            table = np.empty(len(f.table), dtype='object')
+            table[:] = [(x,x) for x in f.table]
+    else:
+        f = draw(finite_functions(source=source, target=target))
+        target = f.target
+        table = f.table
+
+    return FiniteFunction(target, table, dtype=table.dtype)
+
+@st.composite
+def composite_coproduct_finite_domain(draw, source=None, target=None):
+    source, target = draw(arrow_type(source, target))
+    assert _is_valid_arrow_type(source, target)
+
+    a1 = draw(st.integers(min_value=0, max_value=source))
+    a2 = source - a1
+
+    is_inf, inf_dtype = draw(finite_function_target(target=target))
+    f = draw(finite_domain_functions(source=a1, target=target, is_inf=is_inf, inf_dtype=inf_dtype))
+    g = draw(finite_domain_functions(source=a2, target=target, is_inf=is_inf, inf_dtype=inf_dtype))
+
+    return f, g
+
+@st.composite
+def composite_nonfinite_codomain(draw, source=None, middle=None):
+    """ Draw a composite function with a possibly non-finite codomain """
+    A, B = draw(arrow_type(source, middle))
+
+    f = draw(finite_functions(source=A, target=B))
+    g = draw(finite_domain_functions(source=B))
+    return f, g
