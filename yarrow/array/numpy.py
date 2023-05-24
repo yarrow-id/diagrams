@@ -13,8 +13,13 @@ import scipy.sparse as sparse
 
 DEFAULT_DTYPE='int64'
 
-# The underlying array type used by the module.
 Type = np.ndarray
+""" The underlying array type used by functions in the backend. For numpy this is ``np.ndarray``.
+
+   :meta hide-value:
+"""
+# NOTE: we use :meta hide-value: above because numpy is mocked, so sphinx will
+# have the incorrect value in documentation.
 
 def array(*args, **kwargs):
     kwargs.setdefault('dtype', DEFAULT_DTYPE)
