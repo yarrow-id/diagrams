@@ -308,6 +308,19 @@ class AbstractDiagram:
     def __rshift__(f, g):
         return f.compose(g)
 
+    # TODO: IMPROVE THIS
+    @classmethod
+    def tensor_list(cls, ds: 'List[Diagram]', wn=None, xn=None):
+        if len(ds) == 0:
+            assert wn is not None
+            assert xn is not None
+            return Diagram.empty(xn)
+
+        acc = ds[0]
+        for d in ds[1:]:
+            acc = acc @ d
+        return acc
+
     @classmethod
     def tensor_operations(cls, ops: Operations):
         pass # hide the docstring for now

@@ -67,12 +67,12 @@ def decomposition_to_operations(d: 'Diagram'):
     Array = Fun._Array
     s_type = SegmentedFiniteFunction(
         sources = bincount(d.G.xi),
-        targets = Fun(None, Array.full(d.operations, d.G.xn.target)),
+        targets = Fun(None, Array.full(d.operations, d.G.xn.target, dtype=d.G.xn.table.dtype)),
         values  = d.G.wi >> d.G.wn)
 
     t_type = SegmentedFiniteFunction(
         sources = bincount(d.G.xo),
-        targets = Fun(None, Array.full(d.operations, d.G.xn.target)),
+        targets = Fun(None, Array.full(d.operations, d.G.xn.target, dtype=d.G.xn.table.dtype)),
         values  = d.G.wo >> d.G.wn)
     
     return Operations(d.G.xn, s_type, t_type)
@@ -96,14 +96,15 @@ class FrobeniusFunctor(Functor):
         Fun   = h._Fun
         Graph = h._Graph
 
-        xn = d._Fun.initial(h.G.xn.target)
+        xn = d._Fun.initial(h.G.xn.target, dtype=h.G.xn.table.dtype)
 
         # build the morphisms (s ; x) ; (id × h) ; (z ; t) from Proposition B.1
         i = Diagram.identity(swn.values, xn)
         # note: we use the source/target maps of i in constructing those of sx, yt
         # to avoid constructing another array with the same data.
-        sx = Diagram(d.s, i.t + map_half_spider(swn, d.G.wi), Graph.discrete(swn.values, xn))
-        yt = Diagram(i.s + map_half_spider(swn, d.G.wo), d.t, Graph.discrete(swn.values, xn))
+        # import pdb; pdb.set_trace()
+        sx = Diagram(map_half_spider(swn, d.s), i.t + map_half_spider(swn, d.G.wi), Graph.discrete(swn.values, xn))
+        yt = Diagram(i.s + map_half_spider(swn, d.G.wo), map_half_spider(swn, d.t), Graph.discrete(swn.values, xn))
         return (sx >> (i @ h) >> yt)
 
     @abstractmethod

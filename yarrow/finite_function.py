@@ -152,7 +152,7 @@ class AbstractFiniteFunction:
     @classmethod
     def initial(cls, b, dtype=DTYPE):
         """Compute the initial map ``? : 0 → b``"""
-        return cls(b, cls._Array.zeros(0, dtype=DTYPE))
+        return cls(b, cls._Array.zeros(0, dtype=dtype))
 
     @classmethod
     def inj0(cls, a, b):

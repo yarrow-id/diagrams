@@ -22,7 +22,7 @@ class Operations:
       xn         : N            → Σ₁
 
     Source types
-    
+
       s_type
           sources: N            → K₀
           values : sum(sources) → Σ₀      (= max(targets))
