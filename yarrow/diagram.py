@@ -314,12 +314,14 @@ class AbstractDiagram:
         if len(ds) == 0:
             assert wn is not None
             assert xn is not None
-            return Diagram.empty(xn)
+            return Diagram.empty(wn, xn)
 
-        acc = ds[0]
-        for d in ds[1:]:
-            acc = acc @ d
-        return acc
+        assert wn is None
+        assert xn is None
+        s = cls._Fun.tensor_list([d.s for d in ds])
+        t = cls._Fun.tensor_list([d.t for d in ds])
+        G = cls._Graph.coproduct_list([d.G for d in ds])
+        return Diagram(s, t, G)
 
     @classmethod
     def tensor_operations(cls, ops: Operations):

@@ -299,10 +299,12 @@ def diagrams(draw, Obj=None, Arr=None):
     return Diagram(s, t, G)
 
 @st.composite
-def many_diagrams(draw, n):
+def many_diagrams(draw, n=None, min_n=0, max_n=32):
     """ Generate several diagrams from the same signature """
     # TODO: allow Obj = 0? Then we can only ever generate the empty diagram, or
     # maybe only diagrams with generating morphisms of type 0 → 0?
+    if n is None:
+        n = draw(st.integers(min_value=min_n, max_value=max_n))
     Obj = draw(nonzero_objects)
     Arr = draw(sigma_1)
     return [ draw(diagrams(Obj=Obj, Arr=Arr)) for _ in range(0, n) ]

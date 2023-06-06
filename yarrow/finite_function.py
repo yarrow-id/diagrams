@@ -273,6 +273,7 @@ class AbstractFiniteFunction:
 
     ################################################################################
     # Sequential-only methods
+
     @classmethod
     def coproduct_list(cls, fs: List['AbstractFiniteFunction'], target=None):
         """ Compute the coproduct of a list of finite functions with a common target """

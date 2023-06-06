@@ -223,3 +223,28 @@ def test_compose_singletons(fg):
     A_, C_ = h.type
     assert A == A_
     assert C == C_
+
+################################################################################
+# N-fold tensor of a list of diagrams
+
+@given(d=diagrams())
+def test_tensor_list_empty(d):
+    # generate a random diagram and use its signature, but not the actual
+    # diagram content.
+    wn = d._Fun.initial(d.G.wn.target)
+    xn = d._Fun.initial(d.G.xn.target)
+    assert Diagram.tensor_list([], wn, xn) == Diagram.empty(wn, xn)
+
+@given(ds=many_diagrams(min_n=1))
+def test_tensor_list(ds):
+    """ Check that the tensor of two diagrams has the correct type and preserves
+    the number of wires and edges """
+    assert len(ds) > 0
+
+    # slowly compute the tensor product in O(n²) time
+    expected = ds[0]
+    for d in ds[1:]:
+        expected = expected @ d
+
+    actual = Diagram.tensor_list(ds)
+    assert expected == actual

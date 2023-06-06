@@ -177,6 +177,30 @@ class AbstractBipartiteMultigraph:
     def __matmul__(f, g):
         return f.coproduct(g)
 
+    @classmethod
+    def coproduct_list(cls, Gs: 'List[BipartiteMultigraph]', wn=None, xn=None):
+        """ Compute the coproduct of a list of bipartite multigraphs.
+        Note that while this is O(n) in the sequential case, it does not enjoy
+        parallel speedups.
+        """
+        if len(Gs) == 0:
+            assert wn is not None
+            assert xn is not None
+            return cls.empty(wn, xn)
+
+        # can't specify Σ if Gs is non-empty
+        assert wn is None
+        assert xn is None
+        return cls(
+            wi=cls._Fun.tensor_list([g.wi for g in Gs]),
+            wo=cls._Fun.tensor_list([g.wo for g in Gs]),
+            xi=cls._Fun.tensor_list([g.xi for g in Gs]),
+            xo=cls._Fun.tensor_list([g.xo for g in Gs]),
+            wn=cls._Fun.coproduct_list([g.wn for g in Gs]),
+            pi=cls._Fun.coproduct_list([g.pi for g in Gs]),
+            po=cls._Fun.coproduct_list([g.po for g in Gs]),
+            xn=cls._Fun.coproduct_list([g.xn for g in Gs]))
+
     # Apply a morphism α of bipartite multigraphs whose only
     # non-identity component is α_W = q.
     def coequalize_wires(self, q : AbstractFiniteFunction):
