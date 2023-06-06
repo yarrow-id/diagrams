@@ -308,7 +308,6 @@ class AbstractDiagram:
     def __rshift__(f, g):
         return f.compose(g)
 
-    # TODO: IMPROVE THIS
     @classmethod
     def tensor_list(cls, ds: 'List[AbstractDiagram]', wn=None, xn=None):
         """ Compute the tensor product of a list of diagrams. O(n) time in the size of the result.
