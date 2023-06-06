@@ -102,7 +102,6 @@ class FrobeniusFunctor(Functor):
         i = Diagram.identity(swn.values, xn)
         # note: we use the source/target maps of i in constructing those of sx, yt
         # to avoid constructing another array with the same data.
-        # import pdb; pdb.set_trace()
         sx = Diagram(map_half_spider(swn, d.s), i.t + map_half_spider(swn, d.G.wi), Graph.discrete(swn.values, xn))
         yt = Diagram(i.s + map_half_spider(swn, d.G.wo), map_half_spider(swn, d.t), Graph.discrete(swn.values, xn))
         return (sx >> (i @ h) >> yt)

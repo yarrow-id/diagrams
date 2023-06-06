@@ -112,3 +112,57 @@ def test_dagger_dagger_functor(c):
 
     # d has exactly 3x as many generating operations as c.
     assert d.G.xn.source == c.G.xn.source * 3
+
+def interleave(x, y):
+    h = x + y
+    h.table[0::2] = x.table
+    h.table[1::2] = y.table
+    return h
+
+class DoublingFunctor(FrobeniusFunctor):
+    """ The functor which maps each generating object A to the tensor (A ● A),
+    and each generating operation f : A₀ ● A₁ ... An → B₀ ● B₁ ... Bn
+    to the operation f : A₀ A₀ ● A₁ A₁ ... An An → B₀ B₀ ● B₁ B₁ ... Bn Bn.
+    Note that we simply assume a signature in which this is well-typed.
+    """
+    def map_objects(self, objects: AbstractFiniteFunction):
+        # TODO: generalise this to the application of two distinct functors interleaved (optics!)
+        N = len(objects.table) * 2
+        table = np.zeros_like(objects.table, shape=N)
+        table[0::2] = objects.table
+        table[1::2] = objects.table
+
+        sources = FiniteFunction(3, np.full(N//2, 2, dtype='int'))
+        targets = FiniteFunction(None, np.full(N//2, objects.target, dtype=objects.table.dtype))
+        values  = FiniteFunction(objects.target, table)
+        return SegmentedFiniteFunction(sources, targets, values)
+
+    def map_operations(self, ops: Operations) -> Diagram:
+        s_type = SegmentedFiniteFunction(
+            sources = FiniteFunction(ops.s_type.sources.target*2, ops.s_type.sources.table * 2),
+            targets = ops.s_type.targets,
+            values  = interleave(ops.s_type.values, ops.s_type.values))
+
+        t_type = SegmentedFiniteFunction(
+            sources = FiniteFunction(ops.t_type.sources.target*2, ops.t_type.sources.table * 2),
+            targets = ops.t_type.targets,
+            values  = interleave(ops.t_type.values, ops.t_type.values))
+
+        ops = Operations(ops.xn, s_type, t_type)
+        d = Diagram.tensor_operations(ops)
+        return d
+
+# We need to test the case of functors which are not identity-on-objects.
+@given(c=diagrams())
+def test_doubling_functor(c):
+    F = DoublingFunctor()
+    d = F.map_arrow(c)
+
+    A, B = c.type
+    C, D = d.type
+
+    assert np.all(C.table == interleave(A, A).table)
+    assert np.all(D.table == interleave(B, B).table)
+
+    # Same number of operations (just with different types)
+    assert d.G.xn.source == c.G.xn.source

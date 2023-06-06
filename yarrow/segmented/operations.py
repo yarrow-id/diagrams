@@ -40,5 +40,6 @@ class Operations:
     xn: AbstractFiniteFunction
     s_type: AbstractSegmentedFiniteFunction
     t_type: AbstractSegmentedFiniteFunction
+
     def __post_init__(self):
         assert _is_valid(self)

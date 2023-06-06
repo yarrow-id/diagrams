@@ -23,7 +23,7 @@ Type = np.ndarray
 
 def array(*args, **kwargs):
     kwargs.setdefault('dtype', DEFAULT_DTYPE)
-    return np.array(*args, **kwargs)
+    return np.fromiter(*args, **kwargs)
 
 def max(*args, **kwargs):
     return np.max(*args, **kwargs)
