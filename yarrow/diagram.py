@@ -310,7 +310,12 @@ class AbstractDiagram:
 
     # TODO: IMPROVE THIS
     @classmethod
-    def tensor_list(cls, ds: 'List[Diagram]', wn=None, xn=None):
+    def tensor_list(cls, ds: 'List[AbstractDiagram]', wn=None, xn=None):
+        """ Compute the tensor product of a list of diagrams. O(n) time in the size of the result.
+
+        .. warning::
+            Does not speed up to O(log n) in the parallel case
+        """
         if len(ds) == 0:
             assert wn is not None
             assert xn is not None
@@ -328,14 +333,18 @@ class AbstractDiagram:
         pass # hide the docstring for now
         """ Compute the X-fold tensoring of operations
 
+        .. code-block:: text
+
             xn : X → Σ₁
 
         whose typings are given by the segmented finite functions
 
+        .. code-block:: text
+
             s_type : sum_{i ∈ X} arity(xn(i))   → Σ₀
             t_type : sum_{i ∈ X} coarity(xn(i)) → Σ₀
 
-        (This is Proposition 4.13 in the paper)
+        See Proposition 4.13 in :cite:t:`dpafsd`.
         """
         Fun   = cls._Fun
         Array = Fun._Array

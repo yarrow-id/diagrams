@@ -178,10 +178,11 @@ class AbstractBipartiteMultigraph:
         return f.coproduct(g)
 
     @classmethod
-    def coproduct_list(cls, Gs: 'List[BipartiteMultigraph]', wn=None, xn=None):
-        """ Compute the coproduct of a list of bipartite multigraphs.
-        Note that while this is O(n) in the sequential case, it does not enjoy
-        parallel speedups.
+    def coproduct_list(cls, Gs: 'List[AbstractBipartiteMultigraph]', wn=None, xn=None):
+        """ Compute the coproduct of a list of bipartite multigraphs. O(n) in the size of the result.
+
+        .. warning::
+            Does not speed up to O(log n) in the parallel case.
         """
         if len(Gs) == 0:
             assert wn is not None

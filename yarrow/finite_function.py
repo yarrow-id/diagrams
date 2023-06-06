@@ -276,7 +276,11 @@ class AbstractFiniteFunction:
 
     @classmethod
     def coproduct_list(cls, fs: List['AbstractFiniteFunction'], target=None):
-        """ Compute the coproduct of a list of finite functions with a common target """
+        """ Compute the coproduct of a list of finite functions. O(n) in size of the result.
+
+        .. warning::
+            Does not speed up to O(log n) in the parallel case.
+        """
         # NOTE: this function is not parallelized!
         if len(fs) == 0:
             return cls.initial(0 if target is None else target)
@@ -287,6 +291,11 @@ class AbstractFiniteFunction:
 
     @classmethod
     def tensor_list(cls, fs: List['AbstractFiniteFunction']):
+        """ Compute the tensor product of a list of finite functions. O(n) in size of the result.
+
+        .. warning::
+            Does not speed up to O(log n) in the parallel case.
+        """
         if len(fs) == 0:
             return cls.initial(0)
 
