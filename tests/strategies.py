@@ -238,7 +238,7 @@ def diagrams(draw, Obj=None, Arr=None):
     Array = numpy
 
     # Σ₀ > 0    Σ₁ ≥ 0
-    Obj = Obj if Obj is not None else draw(nonzero_objects)
+    Obj = Obj if Obj is not None else draw(objects)
     Arr = Arr if Arr is not None else draw(objects)
 
     # max arity, coarity of generators.

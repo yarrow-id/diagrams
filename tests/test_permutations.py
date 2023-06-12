@@ -1,7 +1,8 @@
+import numpy as np
 import unittest
 from hypothesis import given
 from yarrow.finite_function import FiniteFunction, argsort
-from tests.strategies import adapted_function, finite_functions, permutations, parallel_permutations
+from tests.strategies import objects, adapted_function, finite_functions, permutations, parallel_permutations, parallel_arrows
 
 from tests.util import sorts
 
@@ -57,3 +58,30 @@ def test_sort_by_permuted_key(fpq):
 def test_sort_pf_equals_sortf_p(fp):
     f, p = fp
     assert (p >> f).argsort() == (f.argsort() >> invert(p))
+
+# interleave and its inverse cancel on both sides
+@given(n=objects)
+def test_interleave_inverse(n: int):
+    a = FiniteFunction.interleave(n)
+    b = FiniteFunction.cointerleave(n)
+    i = FiniteFunction.identity(2*n)
+
+    assert a >> b == i
+    assert b >> a == i
+
+# Cointerleaving is the opposite of interleaving, and has a more meaningful
+# interpretation which we can test easily.
+@given(fg=parallel_arrows())
+def test_cointerleave(fg):
+    f, g = fg
+    N = f.source
+    assert N == g.source # should be true because parallel_arrows
+
+    h = (f @ g)
+    a = FiniteFunction.cointerleave(N)
+    r = a >> h
+
+    Array = type(f)._Array
+
+    assert Array.all(r.table[0::2] == h.table[0:N])
+    assert Array.all(r.table[1::2] == h.table[N:])

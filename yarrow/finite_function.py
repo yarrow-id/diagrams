@@ -272,6 +272,28 @@ class AbstractFiniteFunction:
         return type(f)(f.source, f._Array.argsort(f.table))
 
     ################################################################################
+    # Useful permutations
+
+    # Given generating objects A_i and B_i for i ∈ ord{n},
+    #   interleave : (A₀ ● A₁ ● ... ● An) ● (B₀ ● B₁ ● ... ● Bn) → (A₀ ● B₀) ● .. ● (An ● Bn)
+    @classmethod
+    def interleave(cls, N: int):
+        table = cls._Array.zeros(2*N, dtype=int)
+        table[0:N] = cls._Array.arange(N)*2
+        table[N:] = table[0:N] + 1
+        return cls(2*N, table)
+
+    # Given generating objects A_i and B_i for i ∈ ord{n},
+    #   cointerleave : (A₀ ● B₀) ● .. ● (An ● Bn) → (A₀ ● A₁ ● ... ● An) ● (B₀ ● B₁ ● ... ● Bn)
+    @classmethod
+    def cointerleave(cls, N):
+        table = cls._Array.zeros(2*N, dtype=int)
+        table[0::2] = cls._Array.arange(N)
+        table[1::2] = table[0::2] + N
+        return cls(2*N, table)
+
+
+    ################################################################################
     # Sequential-only methods
 
     @classmethod
