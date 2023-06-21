@@ -113,7 +113,9 @@ def test_dagger_dagger_functor(c):
     # d has exactly 3x as many generating operations as c.
     assert d.G.xn.source == c.G.xn.source * 3
 
+# TODO: replace this with FiniteFunction.interleave >> (x + y) ?
 def interleave(x, y):
+    """ Return the finite function whose table is the interleaving of x and y """
     h = x + y
     h.table[0::2] = x.table
     h.table[1::2] = y.table
@@ -139,12 +141,12 @@ class DoublingFunctor(FrobeniusFunctor):
 
     def map_operations(self, ops: Operations) -> Diagram:
         s_type = SegmentedFiniteFunction(
-            sources = FiniteFunction(ops.s_type.sources.target*2, ops.s_type.sources.table * 2),
+            sources = FiniteFunction(None, ops.s_type.sources.table * 2),
             targets = ops.s_type.targets,
             values  = interleave(ops.s_type.values, ops.s_type.values))
 
         t_type = SegmentedFiniteFunction(
-            sources = FiniteFunction(ops.t_type.sources.target*2, ops.t_type.sources.table * 2),
+            sources = FiniteFunction(None, ops.t_type.sources.table * 2),
             targets = ops.t_type.targets,
             values  = interleave(ops.t_type.values, ops.t_type.values))
 

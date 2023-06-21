@@ -43,3 +43,13 @@ class Operations:
 
     def __post_init__(self):
         assert _is_valid(self)
+        # check types of finite functions, segmented finite functions are equal
+        assert self.s_type._Fun == type(self.xn)
+        assert type(self.s_type) == type(self.t_type)
+
+    # return the number of operations
+    def __len__(self):
+        return len(self.xn)
+
+    def __iter__(self):
+        yield from zip(self.xn.table, self.s_type, self.t_type, strict=True)

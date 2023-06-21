@@ -125,7 +125,7 @@ class AbstractFiniteFunction:
             ValueError: if self.target != g.source
         """
         if f.target != g.source:
-            raise ValueError("Can't compose FiniteFunction {f} with {g}: f.source != g.target")
+            raise ValueError(f"Can't compose FiniteFunction {f} with {g}: f.target != g.source")
 
         source = f.source
         target = g.target
@@ -260,6 +260,13 @@ class AbstractFiniteFunction:
     def terminal(cls, a, dtype=DTYPE):
         """ Compute the terminal map ``! : a → 1``. """
         return cls(1, cls._Array.zeros(a, dtype=DTYPE))
+
+    # TODO: rename this "element"?
+    @classmethod
+    def singleton(cls, x, b, dtype=DTYPE):
+        """ return the singleton array ``[x]`` whose domain is ``b``. """
+        assert x < b
+        return cls(b, cls._Array.full(1, x, dtype=dtype))
 
     ################################################################################
     # Sorting morphisms

@@ -102,7 +102,8 @@ class AbstractBipartiteMultigraph:
         assert wn.source == 0
         assert xn.source == 0
         e = cls._Fun.initial(0)
-        return cls(e, e, e, e, wn, e, e, xn)
+        pi = po = cls._Fun.initial(None)
+        return cls(e, e, e, e, wn, pi, po, xn)
 
     @classmethod
     def discrete(cls, wn: AbstractFiniteFunction, xn: AbstractFiniteFunction):

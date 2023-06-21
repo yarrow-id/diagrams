@@ -194,6 +194,14 @@ class AbstractDiagram:
         G = cls._Graph.discrete(w, x)
         return cls(s, t, G)
 
+    @classmethod
+    def half_spider(cls,
+                    s: AbstractFiniteFunction,
+                    w: AbstractFiniteFunction,
+                    x: AbstractFiniteFunction):
+        t = cls._Fun.identity(w.source)
+        return cls.spider(s, t, w, x)
+
     def dagger(self):
         """Swap the *source* and *target* maps of the diagram.
 

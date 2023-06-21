@@ -50,7 +50,7 @@ def apply_finite_object_map(
         targets = wn >> finite_object_map.targets)
 
 def map_half_spider(swn: AbstractSegmentedFiniteFunction, f: AbstractFiniteFunction):
-    """Let swn = F.map_objects(wn) for some functor F,
+    """Let swn = F.map_objects(f.type[1]) for some functor F,
     and suppose S(f) is a half-spider.
     Then map_half_spider(swn, f) == F(S(f)).
     """
@@ -66,12 +66,12 @@ def decomposition_to_operations(d: 'Diagram'):
     Fun = d._Fun
     Array = Fun._Array
     s_type = SegmentedFiniteFunction(
-        sources = bincount(d.G.xi),
+        sources = Fun(None, bincount(d.G.xi).table),
         targets = Fun(None, Array.full(d.operations, d.G.xn.target, dtype=d.G.xn.table.dtype)),
         values  = d.G.wi >> d.G.wn)
 
     t_type = SegmentedFiniteFunction(
-        sources = bincount(d.G.xo),
+        sources = Fun(None, bincount(d.G.xo).table),
         targets = Fun(None, Array.full(d.operations, d.G.xn.target, dtype=d.G.xn.table.dtype)),
         values  = d.G.wo >> d.G.wn)
     
@@ -126,13 +126,17 @@ class FrobeniusFunctor(Functor):
 ################################################################################
 # Built-in functors, supplied as examples.
 
-def identity_object_map(objects: AbstractFiniteFunction):
+def identity_object_map(objects: AbstractFiniteFunction) -> SegmentedFiniteFunction:
     """ The object map of the identity functor """
     Fun = type(objects)
     Array = objects._Array
+
+    # TODO: write a test for this!
+    targets_codomain = None if objects.target is None else objects.target + 1
     return SegmentedFiniteFunction(
-        sources = Fun(2, Array.ones(len(objects))),
-        targets = Fun(objects.target+1, Array.full(len(objects), objects.target)),
+        sources = Fun(None, Array.ones(len(objects))),
+        # TODO: write a test for the "Array.full" call when objects.target is None!
+        targets = Fun(targets_codomain, Array.full(len(objects), objects.target, dtype=objects.table.dtype)),
         values  = objects)
 
 class Identity(Functor):

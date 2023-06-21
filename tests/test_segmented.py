@@ -30,6 +30,26 @@ def test_indexed_tensor(fsx):
     assert actual.source == sum(fs[x(i)].source for i in range(0, x.source))
     assert actual.target == sum(fs[x(i)].target for i in range(0, x.source))
 
+@given(segmented_finite_functions())
+def test_segmented_finite_functions_roundtrip(sff):
+    # Given a list of functions, we can convert to a segmented finite function and back losslessly.
+    # NOTE: this is not true the other way, because there are multiple valid target values for the 'sources' and 'targets' fields.
+    fs = list(sff)
+    roundtrip = list(type(sff).from_list(fs))
+    assert fs == roundtrip
+
+@given(segmented_finite_functions())
+def test_segmented_finite_functions_roundtrip_op(sff):
+    # Roundtrip from SFF → list → SFF
+    # NOTE: this is not lossless, since sff.sources.target and
+    # sff.targets.target values might be lost.
+    roundtrip = type(sff).from_list(list(sff))
+
+    # sources must match exactly, but we ignore the domains of finite functions
+    # because there are multiple valid choices.
+    assert np.all(sff.sources.table == roundtrip.sources.table)
+    assert np.all(sff.targets.table == roundtrip.targets.table)
+    assert np.all(sff.values.table  == roundtrip.values.table)
 
 ################################################################################
 # Segmented operations
@@ -53,3 +73,10 @@ def test_tensor_operations_type(ops):
     assert d.G.Ei == Ki
     assert d.G.Eo == Ko
     assert d.G.X  == ops.xn.source
+
+@given(ops=operations())
+def test_operations_iter(ops):
+    ops_list = list(ops)
+    assert len(ops_list) == len(ops)
+    assert np.all(np.array([ x[0] for x in ops_list ], dtype=ops.xn.table.dtype) == ops.xn.table)
+    # TODO: more comprehensive tests (e.g., that types are correct too)

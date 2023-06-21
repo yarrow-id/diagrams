@@ -24,16 +24,20 @@ class AbstractSegmentedFiniteFunction:
         assert self.values._Array == cls._Array
 
         # Check that values : Σ_{i ∈ N} n(i)
-        assert self._Array.sum(self.sources.table) == self.values.source
+        assert self._Array.sum(self.sources.table) == len(self.values)
 
         # lengths of sources and targets arrays are the same
-        assert self.sources.source == self.targets.source
+        assert len(self.sources) == len(self.targets)
 
-        if self.targets.source == 0:
+        if len(self.targets) == 0:
             self._is_coproduct = True
         else:
             self._is_coproduct = \
                     self._Array.all(self.targets.table[:-1] == self.targets.table[1:])
+
+    # return the number of segments
+    def __len__(self):
+        return len(self.sources)
 
     @classmethod
     def from_list(cls, fs: List['AbstractFiniteFunction']):
@@ -56,6 +60,17 @@ class AbstractSegmentedFiniteFunction:
             targets = cls._Fun(max_target, targets),
             values  = cls._Fun(None, values))
 
+    def __iter__(self):
+        Fun   = type(self.sources)
+        Array = Fun._Array
+        N     = len(self.sources)
+
+        s_ptr = Array.zeros(N+1, dtype=self.sources.table.dtype)
+        s_ptr[1:] = Array.cumsum(self.sources.table)
+
+        for i in range(0, N):
+            yield Fun(self.targets(i), self.values.table[s_ptr[i]:s_ptr[i+1]])
+
     @property
     def N(self):
         # number of segments in the array
@@ -76,6 +91,8 @@ class AbstractSegmentedFiniteFunction:
         """ sff.coproduct(x) computes an x-indexed coproduct of sff """
         # check all targets are the same
         assert self._is_coproduct
+
+        # TODO FIXME: this is a hack, and is totally broken for "empty" coproducts, which MUST have target specified!
         target = 0 if self.targets.source == 0 else self.targets(0)
         return FiniteFunction(target, self.slice(x).table)
 
