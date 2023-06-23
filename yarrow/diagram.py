@@ -199,6 +199,10 @@ class AbstractDiagram:
                     s: AbstractFiniteFunction,
                     w: AbstractFiniteFunction,
                     x: AbstractFiniteFunction):
+        """ Create a *Frobenius Half-Spider*, which is a spider whose target map is the identity """
+        # s : A → W
+        # w : W → Σ₀
+        assert s.target == w.source
         t = cls._Fun.identity(w.source)
         return cls.spider(s, t, w, x)
 

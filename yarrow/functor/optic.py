@@ -64,15 +64,15 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
 
     def map_operations(self, ops: Operations) -> Diagram:
         # TODO: add diagram from notes 2023-06-12
-        fwds = self.map_fwd_operations(ops)
-        revs = self.map_rev_operations(ops)
+        fwds, fwd_coarity = self.map_fwd_operations(ops)
+        revs, rev_arity   = self.map_rev_operations(ops)
 
         Diagram = type(fwds)
         Fun = fwds._Fun
         xn = Fun.initial(fwds.G.xn.source) >> fwds.G.xn
 
         # We need the sizes of each of these types in order to compute
-        # interleavings.
+        # both the internal and external interleavings.
         Afwd = self.map_fwd_objects(ops.s_type.values)
         Arev = self.map_rev_objects(ops.s_type.values)
         Bfwd = self.map_fwd_objects(ops.t_type.values)
@@ -86,11 +86,13 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
         # 'Internal' interleaving maps which bundle together all the Bfwd / M values
         # so we can pass all the M's to "revs".
         wn1 = Bfwd.values + M.values
-        i1 = (Bfwd.sources + M.sources).injections(Fun.cointerleave(len(ops.xn)))
+        fwd_output_sizes = Fun(None, fwd_coarity.table - M.sources.table) + M.sources
+        i1 = fwd_output_sizes.injections(Fun.cointerleave(len(ops.xn)))
         i1 = Diagram.half_spider(i1, wn1, xn)
 
         wn2 = M.values + Brev.values
-        i2 = (M.sources + Brev.sources).injections(Fun.cointerleave(len(ops.xn)))
+        rev_input_sizes = M.sources + Fun(None, rev_arity.table - M.sources.table)
+        i2 = rev_input_sizes.injections(Fun.cointerleave(len(ops.xn)))
         i2 = Diagram.half_spider(i2, wn2, xn).dagger()
 
         id_Bfwd = Diagram.identity(Bfwd.values, xn)

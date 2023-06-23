@@ -65,14 +65,18 @@ def decomposition_to_operations(d: 'Diagram'):
     # directly use the maps d.G.wi and d.G.wo in the result.
     Fun = d._Fun
     Array = Fun._Array
+
+    # TODO: FIXME: replace SegmentedFiniteFunction
+    # TODO: FIXME: note that having an incorrect value (d.G.xn.target) for
+    # "targets" here seemed not to cause test errors! Write a test!
     s_type = SegmentedFiniteFunction(
         sources = Fun(None, bincount(d.G.xi).table),
-        targets = Fun(None, Array.full(d.operations, d.G.xn.target, dtype=d.G.xn.table.dtype)),
+        targets = Fun(None, Array.full(d.operations, d.G.wn.target, dtype=d.G.wn.table.dtype)),
         values  = d.G.wi >> d.G.wn)
 
     t_type = SegmentedFiniteFunction(
         sources = Fun(None, bincount(d.G.xo).table),
-        targets = Fun(None, Array.full(d.operations, d.G.xn.target, dtype=d.G.xn.table.dtype)),
+        targets = Fun(None, Array.full(d.operations, d.G.wn.target, dtype=d.G.wn.table.dtype)),
         values  = d.G.wo >> d.G.wn)
     
     return Operations(d.G.xn, s_type, t_type)

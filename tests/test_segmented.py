@@ -79,4 +79,6 @@ def test_operations_iter(ops):
     ops_list = list(ops)
     assert len(ops_list) == len(ops)
     assert np.all(np.array([ x[0] for x in ops_list ], dtype=ops.xn.table.dtype) == ops.xn.table)
-    # TODO: more comprehensive tests (e.g., that types are correct too)
+    # check types have correct codomain (i.e. Σ₀)
+    assert np.all(np.array([ x[1].target for x in ops_list ], dtype=int) == ops.s_type.values.target)
+    assert np.all(np.array([ x[2].target for x in ops_list ], dtype=int) == ops.t_type.values.target)
