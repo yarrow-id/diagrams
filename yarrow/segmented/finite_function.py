@@ -33,12 +33,12 @@ class AbstractIndexedCoproduct:
         """ return the number of finite functions in the coproduct """
         return len(self.sources)
 
+    @classmethod
     def from_list(cls, target, fs: List['AbstractFiniteFunction']):
         assert all(target == f.target for f in fs)
         return cls(
-            target=target,
-            sources=Fun(len(fs), [len(f) for f in fs], dtype=int),
-            values=Fun.coproduct_list(fs, target=target))
+            sources=cls._Fun(None, [len(f) for f in fs], dtype=int),
+            values=cls._Fun.coproduct_list(fs, target=target))
 
     def __iter__(self):
         """ Yield an iterator of the constituent finite functions
