@@ -1,14 +1,12 @@
 from dataclasses import dataclass
 from yarrow.finite_function import AbstractFiniteFunction
-from yarrow.segmented.finite_function import AbstractSegmentedFiniteFunction
+from yarrow.segmented.finite_function import AbstractIndexedCoproduct
 
 def _is_valid(ops: 'Operations'):
     """ Check if a tensoring of operations has correct types """
     N = ops.xn.source
-    return len(ops.s_type.sources) == N and \
-           len(ops.s_type.targets) == N and \
-           len(ops.t_type.sources) == N and \
-           len(ops.t_type.targets) == N
+    return len(ops.s_type) == N and \
+           len(ops.t_type) == N
 
 @dataclass
 class Operations:
@@ -24,22 +22,21 @@ class Operations:
     Source types
 
       s_type
-          sources: N            → K₀
+          sources: N            → None
           values : sum(sources) → Σ₀      (= max(targets))
-          targets: N            → Σ₀      (= const Σ₀+1)
 
     Target types
 
       t_type
-          sources: N            → K₁
+          sources: N            → None
           values : sum(sources) → Σ₀      (= max(targets))
           targets: N            → Σ₀      (= const Σ₀+1)
 
     The "sources" arrays of s_type and t_type store
     """
     xn: AbstractFiniteFunction
-    s_type: AbstractSegmentedFiniteFunction
-    t_type: AbstractSegmentedFiniteFunction
+    s_type: AbstractIndexedCoproduct
+    t_type: AbstractIndexedCoproduct
 
     def __post_init__(self):
         assert _is_valid(self)

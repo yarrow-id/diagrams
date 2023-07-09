@@ -5,15 +5,15 @@ from yarrow.functor.functor import *
 class FrobeniusOpticFunctor(FrobeniusFunctor):
 
     @abstractmethod
-    def map_fwd_objects(self, objects: AbstractFiniteFunction) -> SegmentedFiniteFunction:
+    def map_fwd_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
         ...
 
     @abstractmethod
-    def map_rev_objects(self, objects: AbstractFiniteFunction) -> SegmentedFiniteFunction:
+    def map_rev_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
         ...
 
     @abstractmethod
-    def residuals(self, ops: Operations) -> SegmentedFiniteFunction:
+    def residuals(self, ops: Operations) -> IndexedCoproduct:
         ...
 
     @abstractmethod
@@ -27,7 +27,7 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
     ############################################################################
     # Implementation
 
-    def map_objects(self, objects: AbstractFiniteFunction) -> SegmentedFiniteFunction:
+    def map_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
         # interleave forward and reverse objects
         fwd = self.map_fwd_objects(objects)
         rev = self.map_rev_objects(objects)
@@ -42,24 +42,14 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
         i = Fun.cointerleave(N)
         sources = Fun(None, fwd.sources.table + rev.sources.table)
 
-        # TODO: FIXME: make "targets" optional in SegmentedFiniteFunction; allow
-        # it to also be a scalar value representing an array of the same length
-        # as 'sources'. This will prevent a lot of wasted memory.
-        targets = Fun(None, Fun._Array.full(len(sources), objects.target, dtype=objects.table.dtype))
-
-        # TODO: replace this with IndexedCoproduct, and allow taking coproducts of indexed coproducts!
-        both = SegmentedFiniteFunction(
+        both = IndexedCoproduct(
             sources = fwd.sources + rev.sources,
-            targets = fwd.targets + rev.targets,
             values  = fwd.values  + rev.values)
 
-        # TODO: FIXME: replacing target of values here is a hack to work around
-        # bad design of SegmentedFiniteFunction
         sigma_1 = fwd.values.target
-        result = SegmentedFiniteFunction(
+        result = IndexedCoproduct(
             sources = sources,
-            values  = Fun(sigma_1, both.coproduct(i).table),
-            targets = targets)
+            values  = Fun(sigma_1, both.coproduct(i).table))
         return result
 
     def map_operations(self, ops: Operations) -> Diagram:
@@ -122,7 +112,7 @@ def lens_fwd(ops: Operations, copy_label) -> AbstractDiagram:
     # Return the diagram representing the forward part of a lens optic, i.e.,
     #       Δ ; (f₀ ● id)  ● Δ ; (f₁ ● id) ... 
     # This is given by 
-    pass
+    raise NotImplementedError("TODO")
 
 def adapt_optic(optic: Diagram, Afwd, Arev, Bfwd, Brev):
-    pass
+    raise NotImplementedError("TODO")

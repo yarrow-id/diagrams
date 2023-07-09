@@ -6,7 +6,7 @@ from yarrow.bipartite_multigraph import BipartiteMultigraph
 from yarrow.diagram import Diagram
 
 from yarrow.segmented.operations import Operations
-from yarrow.segmented.finite_function import SegmentedFiniteFunction
+from yarrow.segmented.finite_function import SegmentedFiniteFunction, IndexedCoproduct
 
 import hypothesis.strategies as st
 
@@ -391,6 +391,17 @@ def segmented_finite_functions(draw, N=None, Obj=None):
         targets=targets,
         values=values)
 
+# Generate a coproduct of finite functions like the one below
+#   sff
+#       sources: N            → K₀
+#       values : sum(sources) → Σ₀      (= max(targets))
+@st.composite
+def indexed_coproducts(draw, N=None, Obj=None):
+    N, Obj = draw(arrow_type(source=N, target=Obj))
+    sources = FiniteFunction(None, draw(finite_functions(source=N)).table)
+    values  = draw(finite_functions(source=np.sum(sources.table), target=Obj))
+    return IndexedCoproduct(sources=sources, values=values)
+
 # Generate a tensoring of operations with the following types.
 #   xn         : N            → Σ₁
 #
@@ -405,8 +416,8 @@ def segmented_finite_functions(draw, N=None, Obj=None):
 @st.composite
 def operations(draw):
     Obj = draw(objects)
-    s_type = draw(segmented_finite_functions(Obj=Obj))
-    t_type = draw(segmented_finite_functions(
+    s_type = draw(indexed_coproducts(Obj=Obj))
+    t_type = draw(indexed_coproducts(
         N=len(s_type.sources),
         Obj=s_type.values.target))
 
@@ -414,6 +425,9 @@ def operations(draw):
     xn = draw(finite_functions(source=N))
 
     return Operations(xn, s_type, t_type)
+
+################################################################################
+# Half spiders
 
 @st.composite
 def half_spider(draw, Obj=None):
@@ -432,9 +446,9 @@ def half_spider(draw, Obj=None):
 # a segmented array encoding the object map of a (finite) functor.
 @st.composite
 def object_map_and_half_spider(draw):
-    sff = draw(segmented_finite_functions())
-    f, wn = draw(half_spider(Obj=sff.sources.source))
-    return sff, f, wn
+    c = draw(indexed_coproducts())
+    f, wn = draw(half_spider(Obj=c.sources.source))
+    return c, f, wn
 
 
 ################################################################################

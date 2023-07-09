@@ -31,8 +31,8 @@ class FiniteOpticFunctor(FrobeniusOpticFunctor):
     """ Optic Functor whose action on generating objects is given, and whose action on operations is ... """
     # Assume categories C presented by Σ and D presented by Ω.
     # objects in Σ₀ are mapped to lists Ω₀*
-    wn_fwd: SegmentedFiniteFunction  # Σ₀ → Ω₀*
-    wn_rev: SegmentedFiniteFunction  # Σ₀ → Ω₀*
+    wn_fwd: IndexedCoproduct # Σ₀ → Ω₀*
+    wn_rev: IndexedCoproduct # Σ₀ → Ω₀*
     # Σ₀ → Ω₁ where Ω₁ = 2 * Σ₀
 
     # Residuals map generating operations into some choice of object in D
@@ -40,35 +40,32 @@ class FiniteOpticFunctor(FrobeniusOpticFunctor):
     #   sources : Σ₁ → Ks
     #   targets : Σ₁ → Kt
     #   values  : Σ₁ → Ω₀
-    _residuals: SegmentedFiniteFunction
+    _residuals: IndexedCoproduct
 
     def __post_init__(self):
         assert len(self.wn_fwd) == len(self.wn_rev)
         assert self.wn_fwd.values.target == self._residuals.values.target
         assert self.wn_rev.values.target == self._residuals.values.target
 
-    def map_fwd_objects(self, objects) -> SegmentedFiniteFunction:
+    def map_fwd_objects(self, objects) -> IndexedCoproduct:
         # wn_fwd.sources associates to each object i ∈ Σ₀ a size k(i).
         # Thus to get the sizes of the coproducts, we just compose objects >> self.wn_fwd.sources
         assert objects.target == len(self.wn_fwd)
-        result = SegmentedFiniteFunction(
+        result = IndexedCoproduct(
                 sources=objects >> self.wn_fwd.sources,
-                targets=objects >> self.wn_fwd.targets,
                 values = FiniteFunction(self.wn_fwd.values.target, self.wn_fwd.coproduct(objects).table))
         return result
 
-    def map_rev_objects(self, objects) -> SegmentedFiniteFunction:
+    def map_rev_objects(self, objects) -> IndexedCoproduct:
         assert objects.target == len(self.wn_rev)
-        return SegmentedFiniteFunction(
+        return IndexedCoproduct(
                 sources=objects >> self.wn_rev.sources,
-                targets=objects >> self.wn_rev.targets,
                 values = FiniteFunction(self.wn_rev.values.target, self.wn_rev.coproduct(objects).table))
 
-    def residuals(self, ops: Operations) -> SegmentedFiniteFunction:
+    def residuals(self, ops: Operations) -> IndexedCoproduct:
         assert ops.xn.target == len(self._residuals)
-        return SegmentedFiniteFunction(
+        return IndexedCoproduct(
                 sources=FiniteFunction(None, (ops.xn >> self._residuals.sources).table),
-                targets=FiniteFunction(None, (ops.xn >> self._residuals.targets).table),
                 values=FiniteFunction(self.wn_fwd.values.target, self._residuals.coproduct(ops.xn).table))
 
     def map_fwd_operations(self, ops: Operations) -> Diagram:
@@ -117,10 +114,10 @@ class FiniteOpticFunctor(FrobeniusOpticFunctor):
 def finite_optic_functor(draw):
     sigma_0, omega_0 = draw(arrow_type())
 
-    wn_fwd  = draw(segmented_finite_functions(N=sigma_0, Obj=omega_0))
+    wn_fwd  = draw(indexed_coproducts(N=sigma_0, Obj=omega_0))
     wn_fwd.sources.target = None # bit of a hack
 
-    wn_rev  = draw(segmented_finite_functions(N=sigma_0, Obj=omega_0))
+    wn_rev  = draw(indexed_coproducts(N=sigma_0, Obj=omega_0))
     wn_rev.sources.target = None # bit of a hack
 
     sigma_1, _ = draw(arrow_type(target=omega_0))

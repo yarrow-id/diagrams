@@ -3,7 +3,104 @@ from dataclasses import dataclass
 import yarrow.array.numpy as numpy
 
 @dataclass
+class AbstractIndexedCoproduct:
+    """ An IndexedCoproduct represents a coproduct of finite functions.
+    You can think of it simply as a segmented array.
+    """
+    # sources: an array of segment sizes (note: not ptrs)
+    sources: AbstractFiniteFunction
+
+    # values: the values of the coproduct
+    values: AbstractFiniteFunction
+
+    def __post_init__(self):
+        # TODO FIXME: make this type derivable from AbstractFiniteFunction so we
+        # don't need to have one version for each backend?
+        self._Fun = type(self.sources)
+        self._Array = self._Fun._Array
+
+        # we always ignore the target of sources; this ensures
+        # roundtrippability.
+        assert self.sources.target is None
+        assert type(self.values) == self._Fun
+        assert len(self.values) == self._Array.sum(self.sources.table)
+
+    @property
+    def target(self):
+        return self.values.target
+
+    def __len__(self):
+        """ return the number of finite functions in the coproduct """
+        return len(self.sources)
+
+    def from_list(cls, target, fs: List['AbstractFiniteFunction']):
+        assert all(target == f.target for f in fs)
+        return cls(
+            target=target,
+            sources=Fun(len(fs), [len(f) for f in fs], dtype=int),
+            values=Fun.coproduct_list(fs, target=target))
+
+    def __iter__(self):
+        """ Yield an iterator of the constituent finite functions
+
+        >>> list(AbstractIndexedCoproduct.from_list(fs)) == fs
+        True
+        """
+        N     = len(self.sources)
+
+        # Compute source pointers
+        s_ptr = self._Array.zeros(N+1, dtype=self.sources.table.dtype)
+        s_ptr[1:] = self._Array.cumsum(self.sources.table)
+
+        for i in range(0, N):
+            yield self._Fun(self.target, self.values.table[s_ptr[i]:s_ptr[i+1]])
+
+    # Since values is the concatenation of
+    # finite functions F_i : size(i) → Nat,
+    # i.e.,
+    #   values = F_0 + F_1 + ... + F_{N-1}
+    # we have
+    #   ι_x ; value = F_i
+    def coproduct(self, x: FiniteFunction):
+        """ f.coproduct(x) computes an x-indexed coproduct of f. That is, if
+
+        ``f = f₀ + f₁ + ... + fn``
+
+        for ``n ∈ X``
+
+        then
+
+        ``f.coproduct(x) = f_{x(0)} + f_{x(1)} + ... + f_{x(n-1)}``
+        """
+        # Check that x's codomain is the "indexing set" of the coproduct.
+        assert x.target == len(self.sources)
+        return self.sources.injections(x) >> self.values
+
+    def map(self, x: FiniteFunction):
+        """ Given a Coproduct of finite functions
+        ``Σ_{i ∈ X} f_i : Σ_{i ∈ X} A_i → B``
+        and a finite function
+        ``x : W → X``
+        return a new Coproduct
+        ``Σ_{i ∈ X} f_{x(i)} : Σ_{i ∈ W} A_{x(i)} → B``
+        """
+        return type(self)(
+            sources = x >> self.sources,
+            values = self.coproduct(x))
+
+class IndexedCoproduct(AbstractIndexedCoproduct):
+    _Fun   = FiniteFunction
+    _Array = FiniteFunction._Array
+
+
+
+
+
+@dataclass
 class AbstractSegmentedFiniteFunction:
+    """ An AbstractSegmentedFiniteFunction encodes a *tensoring* of finite functions.
+    This means we have to include an *array* of targets.
+    """
     # sizes of each of the N segments
     # sources : N → Nat
     sources: AbstractFiniteFunction

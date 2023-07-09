@@ -400,3 +400,10 @@ def bincount(f: AbstractFiniteFunction):
     # where
     #   g(b) = |{b . ∃a. f(a) = b}|
     return type(f)(len(f)+1, f._Array.bincount(f.table, minlength=f.target))
+
+def cumsum(f: AbstractFiniteFunction) -> AbstractFiniteFunction:
+    Fun = type(f)
+    Array = Fun._Array
+    table = Array.zeros(len(f) + 1, dtype=f.table.dtype)
+    table[1:] = Array.cumsum(f.table)
+    return Fun(table[-1]+1, table[:-1])

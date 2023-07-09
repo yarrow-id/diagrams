@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from yarrow.finite_function import FiniteFunction, bincount
+from yarrow.finite_function import FiniteFunction, bincount, cumsum
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -192,3 +192,9 @@ def test_compose_finite_domain(fg):
 
     h = f >> g
     assert h.type == (A, C)
+
+@given(f=finite_functions())
+def test_cumsum(f):
+    g = cumsum(f)
+    assert len(g) == len(f)
+    assert g.target == np.sum(f.table) + 1

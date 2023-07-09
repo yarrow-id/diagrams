@@ -48,9 +48,7 @@ def test_operations(ops):
     xn, s_type, t_type = ops.xn, ops.s_type, ops.t_type
     N = xn.source
     assert len(s_type.sources) == N
-    assert len(s_type.targets) == N
     assert len(t_type.sources) == N
-    assert len(t_type.targets) == N
 
     assert np.sum(s_type.sources.table) == s_type.values.source
     assert np.sum(t_type.sources.table) == t_type.values.source

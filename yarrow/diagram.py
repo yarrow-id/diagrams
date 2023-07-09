@@ -46,7 +46,6 @@ from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
 from yarrow.bipartite_multigraph import BipartiteMultigraph, AbstractBipartiteMultigraph
 
 # for tensor_operations
-from yarrow.segmented.finite_function import AbstractSegmentedFiniteFunction
 from yarrow.segmented.operations import Operations
 
 class AbstractDiagram:

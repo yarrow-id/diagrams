@@ -4,7 +4,7 @@ from abc import abstractmethod
 from yarrow.diagram import Diagram
 from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction, bincount
 from yarrow.decompose.frobenius import frobenius_decomposition
-from yarrow.segmented.finite_function import AbstractSegmentedFiniteFunction, SegmentedFiniteFunction
+from yarrow.segmented.finite_function import AbstractIndexedCoproduct, IndexedCoproduct
 from yarrow.segmented.operations import Operations
 
 class Functor:
@@ -13,7 +13,7 @@ class Functor:
     # - map_objects as F₀
     # - map_arrow   as F₁
     @abstractmethod
-    def map_objects(self, objects: AbstractFiniteFunction) -> AbstractSegmentedFiniteFunction:
+    def map_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
         """Given an array of objects encoded as a FiniteFunction
 
             objects : W → Σ₀
@@ -22,7 +22,6 @@ class Functor:
         object was mapped.
 
             sources : W            → Nat
-            targets : W            → Nat
             values  : sum(sources) → Ω₀
         """
         ...
@@ -33,9 +32,9 @@ class Functor:
         ...
 
 def apply_finite_object_map(
-        finite_object_map: AbstractSegmentedFiniteFunction,
-        wn: AbstractFiniteFunction) -> AbstractSegmentedFiniteFunction:
-    """Given an AbstractSegmentedFiniteFunction f representing a family of K functions
+        finite_object_map: AbstractIndexedCoproduct,
+        wn: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
+    """Given an AbstractIndexedCoproduct f representing a family of K functions
 
         f_i : N_i → Ω₀*, i ∈ K
 
@@ -44,12 +43,12 @@ def apply_finite_object_map(
     apply_finite_object_map(f, wn) computes the object F(wn)
     as a segmented array.
     """
+    assert isinstance(finite_object_map, AbstractIndexedCoproduct)
     return type(finite_object_map)(
         values  = finite_object_map.sources.injections(wn) >> finite_object_map.values,
-        sources = wn >> finite_object_map.sources,
-        targets = wn >> finite_object_map.targets)
+        sources = wn >> finite_object_map.sources)
 
-def map_half_spider(swn: AbstractSegmentedFiniteFunction, f: AbstractFiniteFunction):
+def map_half_spider(swn: AbstractIndexedCoproduct, f: AbstractFiniteFunction):
     """Let swn = F.map_objects(f.type[1]) for some functor F,
     and suppose S(f) is a half-spider.
     Then map_half_spider(swn, f) == F(S(f)).
@@ -66,17 +65,12 @@ def decomposition_to_operations(d: 'Diagram'):
     Fun = d._Fun
     Array = Fun._Array
 
-    # TODO: FIXME: replace SegmentedFiniteFunction
-    # TODO: FIXME: note that having an incorrect value (d.G.xn.target) for
-    # "targets" here seemed not to cause test errors! Write a test!
-    s_type = SegmentedFiniteFunction(
+    s_type = IndexedCoproduct(
         sources = Fun(None, bincount(d.G.xi).table),
-        targets = Fun(None, Array.full(d.operations, d.G.wn.target, dtype=d.G.wn.table.dtype)),
         values  = d.G.wi >> d.G.wn)
 
-    t_type = SegmentedFiniteFunction(
+    t_type = IndexedCoproduct(
         sources = Fun(None, bincount(d.G.xo).table),
-        targets = Fun(None, Array.full(d.operations, d.G.wn.target, dtype=d.G.wn.table.dtype)),
         values  = d.G.wo >> d.G.wn)
     
     return Operations(d.G.xn, s_type, t_type)
@@ -87,7 +81,7 @@ class FrobeniusFunctor(Functor):
     which should map a tensoring of generators to a tensoring of diagrams.
     """
     @abstractmethod
-    def map_objects(self, objects: AbstractFiniteFunction) -> SegmentedFiniteFunction:
+    def map_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
         ...
 
     def map_arrow(self, d: Diagram):
@@ -130,24 +124,22 @@ class FrobeniusFunctor(Functor):
 ################################################################################
 # Built-in functors, supplied as examples.
 
-def identity_object_map(objects: AbstractFiniteFunction) -> SegmentedFiniteFunction:
+def identity_object_map(objects: AbstractFiniteFunction) -> IndexedCoproduct:
     """ The object map of the identity functor """
     Fun = type(objects)
     Array = objects._Array
 
     # TODO: write a test for this!
     targets_codomain = None if objects.target is None else objects.target + 1
-    return SegmentedFiniteFunction(
+    return IndexedCoproduct(
         sources = Fun(None, Array.ones(len(objects))),
-        # TODO: write a test for the "Array.full" call when objects.target is None!
-        targets = Fun(targets_codomain, Array.full(len(objects), objects.target, dtype=objects.table.dtype)),
         values  = objects)
 
 class Identity(Functor):
     """ The identity functor, implemented by actually just returning the same
     diagram """
     def map_objects(self, objects):
-        return _identity_object_map(objects)
+        return identity_object_map(objects)
         
     def map_arrow(self, d: Diagram):
         return d
