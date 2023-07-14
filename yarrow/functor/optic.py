@@ -1,4 +1,9 @@
-""" Functors to Optics """
+""" Functors to diagrams of optics.
+
+This module contains a class :py:class:`FrobeniusOpticFunctor`, which can be
+used to implement a functor from diagrams into a category of *optics*.
+
+"""
 from yarrow.diagram import AbstractDiagram
 from yarrow.functor.functor import *
 
@@ -29,6 +34,7 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
     # Implementation
 
     def map_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
+        """ Implements map_objects in terms of ``map_fwd_objects`` and ``map_rev_objects``. """
         # look up concrete impl. of IndexedCoproduct
         IndexedCoproduct = type(objects).IndexedCoproduct
 
@@ -57,6 +63,7 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
         return result
 
     def map_operations(self, ops: Operations) -> AbstractDiagram:
+        """ Implements ``map_operations`` using ``map_fwd_operations`` and ``map_rev_operations``. """
         # TODO: add diagram from notes 2023-06-12
         fwds, fwd_coarity = self.map_fwd_operations(ops)
         revs, rev_arity   = self.map_rev_operations(ops)
@@ -111,6 +118,7 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
         return lhs >> d >> rhs
 
 def lens_fwd(ops: Operations, copy_label) -> AbstractDiagram:
+    """ :meta hide-value: """
     # Given a tensoring
     #       f₀ ● f₁ ● ... ● fn
     # Return the diagram representing the forward part of a lens optic, i.e.,
@@ -119,4 +127,5 @@ def lens_fwd(ops: Operations, copy_label) -> AbstractDiagram:
     raise NotImplementedError("TODO")
 
 def adapt_optic(optic: AbstractDiagram, Afwd, Arev, Bfwd, Brev):
+    """ :meta hide-value: """
     raise NotImplementedError("TODO")

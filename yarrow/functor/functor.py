@@ -40,12 +40,12 @@ class Functor:
     def map_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
         """ The object map ``F₀`` of a functor ``F : Diagram_Σ → Diagram_Ω`` maps between
         lists of generating objects `F₀ : Σ₀* → Ω₀*`.
-        Given an array of generating objects encoded as a FiniteFunction:
+        Given an array of generating objects encoded as a FiniteFunction::
 
             objects : W → Σ₀
 
         This function must return an *indexed coproduct* representing the lists
-        to which each object was mapped.
+        to which each object was mapped::
 
             sources : W            → Nat
             values  : sum(sources) → Ω₀

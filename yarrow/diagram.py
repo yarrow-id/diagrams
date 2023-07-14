@@ -38,7 +38,6 @@ Summary
     :template: class.rst
 
     AbstractDiagram
-    Diagram
 """
 from dataclasses import astuple
 

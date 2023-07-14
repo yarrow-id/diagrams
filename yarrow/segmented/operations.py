@@ -15,24 +15,21 @@ class Operations:
     completely flat representation, we need to store them in *segmented arrays*.
     The Operations type is therefore a 3-tuple:
 
-    Operation labels
+    Operation labels::
 
       xn         : N            → Σ₁
 
-    Source types
+    Source types (encoded as an :py:class:`AbstractIndexedCoproduct`)::
 
       s_type
           sources: N            → None
-          values : sum(sources) → Σ₀      (= max(targets))
+          values : sum(sources) → Σ₀
 
-    Target types
+    Target types (encoded as an :py:class:`AbstractIndexedCoproduct`)::
 
       t_type
           sources: N            → None
-          values : sum(sources) → Σ₀      (= max(targets))
-          targets: N            → Σ₀      (= const Σ₀+1)
-
-    The "sources" arrays of s_type and t_type store
+          values : sum(sources) → Σ₀
     """
     xn: AbstractFiniteFunction
     s_type: AbstractIndexedCoproduct

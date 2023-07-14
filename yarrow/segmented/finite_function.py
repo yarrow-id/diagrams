@@ -1,11 +1,23 @@
+""" Finite coproducts for Finite Functions.
+They're used to parallelize several operations like the
+:py:meth:`yarrow.functor.functor.Functor.map_objects` method.
+"""
 from yarrow.finite_function import *
 from dataclasses import dataclass
 import yarrow.array.numpy as numpy
 
 @dataclass
 class AbstractIndexedCoproduct:
-    """ An IndexedCoproduct represents a coproduct of finite functions.
+    """ A finite coproduct of finite functions.
     You can think of it simply as a segmented array.
+    Categorically, it represents a finite coproduct::
+
+        Σ_{i ∈ N} f_i : s(f_i) → Y
+
+    as a pair of maps::
+
+        sources: N            → Nat     (target is natural numbers)
+        values : sum(sources) → Σ₀
     """
     # sources: an array of segment sizes (note: not ptrs)
     sources: AbstractFiniteFunction
@@ -35,6 +47,7 @@ class AbstractIndexedCoproduct:
 
     @classmethod
     def from_list(cls, target, fs: List['AbstractFiniteFunction']):
+        """ Create an `AbstractIndexedCoproduct` from a list of :py:class:`AbstractFiniteFunction` """
         assert all(target == f.target for f in fs)
         return cls(
             sources=cls._Fun(None, [len(f) for f in fs], dtype=int),
@@ -55,44 +68,37 @@ class AbstractIndexedCoproduct:
         for i in range(0, N):
             yield self._Fun(self.target, self.values.table[s_ptr[i]:s_ptr[i+1]])
 
-    # Since values is the concatenation of
-    # finite functions F_i : size(i) → Nat,
-    # i.e.,
-    #   values = F_0 + F_1 + ... + F_{N-1}
-    # we have
-    #   ι_x ; value = F_i
-    def coproduct(self, x: AbstractFiniteFunction):
-        """ f.coproduct(x) computes an x-indexed coproduct of f. That is, if
-
-        ``f = f₀ + f₁ + ... + fn``
-
-        for ``n ∈ X``
-
-        then
-
-        ``f.coproduct(x) = f_{x(0)} + f_{x(1)} + ... + f_{x(n-1)}``
-        """
-        # Check that x's codomain is the "indexing set" of the coproduct.
-        assert x.target == len(self.sources)
-        return self.sources.injections(x) >> self.values
-
     def map(self, x: AbstractFiniteFunction):
-        """ Given a Coproduct of finite functions
-        ``Σ_{i ∈ X} f_i : Σ_{i ∈ X} A_i → B``
-        and a finite function
-        ``x : W → X``
-        return a new Coproduct
-        ``Σ_{i ∈ X} f_{x(i)} : Σ_{i ∈ W} A_{x(i)} → B``
+        """ Given an :py:class:`AbstractIndexedCoproduct` of finite functions::
+
+            Σ_{i ∈ X} f_i : Σ_{i ∈ X} A_i → B
+
+        and a finite function::
+
+            x : W → X
+
+        return a new :py:class:`AbstractIndexedCoproduct` representing::
+
+            Σ_{i ∈ X} f_{x(i)} : Σ_{i ∈ W} A_{x(i)} → B
         """
         return type(self)(
             sources = x >> self.sources,
             values = self.coproduct(x))
 
+    def coproduct(self, x: AbstractFiniteFunction) -> AbstractFiniteFunction:
+        """Like ``map`` but only computes the ``values`` array of an AbstractIndexedCoproduct"""
+        assert x.target == len(self.sources)
+        return self.sources.injections(x) >> self.values
+
+
 
 @dataclass
 class AbstractSegmentedFiniteFunction:
     """ An AbstractSegmentedFiniteFunction encodes a *tensoring* of finite functions.
-    This means we have to include an *array* of targets.
+    This means we have to include an array of *targets* as well.
+
+    ..warning::
+        Deprecated
     """
     # sizes of each of the N segments
     # sources : N → Nat
