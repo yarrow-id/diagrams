@@ -1,3 +1,4 @@
+""" Functors to Optics """
 from yarrow.diagram import AbstractDiagram
 from yarrow.functor.functor import *
 

@@ -7,8 +7,10 @@ Data-parallel algorithms for string diagrams as seen in :cite:t:`dpafsd`.
    :toctree: _autosummary
    :recursive:
 
+   yarrow.array
    yarrow.finite_function
    yarrow.bipartite_multigraph
    yarrow.diagram
-   yarrow.array
+   yarrow.functor
+   yarrow.numpy
    yarrow.cupy
