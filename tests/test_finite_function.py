@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from yarrow.finite_function import FiniteFunction, bincount, cumsum
+from yarrow import *
 
 from hypothesis import given
 import hypothesis.strategies as st

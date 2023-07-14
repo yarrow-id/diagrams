@@ -1,9 +1,6 @@
-from dataclasses import dataclass
-from yarrow.finite_function import FiniteFunction, argsort
-from yarrow.bipartite_multigraph import BipartiteMultigraph
-from yarrow.diagram import Diagram
+from yarrow.diagram import AbstractDiagram
 
-def frobenius_decomposition(d: Diagram) -> Diagram:
+def frobenius_decomposition(d: AbstractDiagram) -> AbstractDiagram:
     """ Given a Diagram, permute its xi, xo, pi, and po maps to be in
     (generator, port) order.
     """

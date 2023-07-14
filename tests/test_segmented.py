@@ -1,8 +1,7 @@
-from yarrow.finite_function import FiniteFunction
-from yarrow.segmented.finite_function import SegmentedFiniteFunction
-
 from hypothesis import given
 import hypothesis.strategies as st
+
+from yarrow.numpy import FiniteFunction, SegmentedFiniteFunction
 
 from tests.strategies import *
 

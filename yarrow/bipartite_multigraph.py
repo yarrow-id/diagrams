@@ -9,7 +9,7 @@ whose concrete instantiations choose a backend.
 For example, :py:class:`BipartiteMultigraph` are backed by numpy arrays.
 """
 from dataclasses import dataclass
-from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
+from yarrow.finite_function import AbstractFiniteFunction
 
 class AbstractBipartiteMultigraph:
     """ The type of bipartite multigraphs, parametrised by cls._Fun, the
@@ -272,7 +272,3 @@ def universal(q: AbstractFiniteFunction, f: AbstractFiniteFunction):
     # However, this won't perform well on e.g., GPU hardware. FIXME!
     u[q.table] = f.table
     return type(f)(target, u)
-
-class BipartiteMultigraph(AbstractBipartiteMultigraph):
-    """ AbstractBipartiteMultigraphs backed by numpy arrays """
-    _Fun = FiniteFunction

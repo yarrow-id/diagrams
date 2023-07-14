@@ -42,8 +42,8 @@ Summary
 """
 from dataclasses import astuple
 
-from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction
-from yarrow.bipartite_multigraph import BipartiteMultigraph, AbstractBipartiteMultigraph
+from yarrow.finite_function import AbstractFiniteFunction
+from yarrow.bipartite_multigraph import AbstractBipartiteMultigraph
 
 # for tensor_operations
 from yarrow.segmented.operations import Operations
@@ -329,14 +329,14 @@ class AbstractDiagram:
         if len(ds) == 0:
             assert wn is not None
             assert xn is not None
-            return Diagram.empty(wn, xn)
+            return cls.empty(wn, xn)
 
         assert wn is None
         assert xn is None
         s = cls._Fun.tensor_list([d.s for d in ds])
         t = cls._Fun.tensor_list([d.t for d in ds])
         G = cls._Graph.coproduct_list([d.G for d in ds])
-        return Diagram(s, t, G)
+        return cls(s, t, G)
 
     @classmethod
     def tensor_operations(cls, ops: Operations):
@@ -388,8 +388,3 @@ class AbstractDiagram:
                 wi = i0,
                 wo = i1,
                 wn = s_type.values + t_type.values))
-
-class Diagram(AbstractDiagram):
-    """ Diagrams with the numpy backend """
-    _Fun = FiniteFunction
-    _Graph = BipartiteMultigraph

@@ -2,9 +2,7 @@ import pytest
 import unittest
 
 import numpy as np
-from yarrow.finite_function import FiniteFunction
-from yarrow.bipartite_multigraph import BipartiteMultigraph, universal
-from yarrow.diagram import Diagram
+from yarrow.numpy import *
 
 from hypothesis import given
 import hypothesis.strategies as st

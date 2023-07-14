@@ -3,6 +3,9 @@ from dataclasses import dataclass
 import hypothesis.strategies as st
 from tests.strategies import *
 
+# testing against the numpy backend
+from yarrow.numpy import *
+
 from yarrow.functor.functor import *
 from yarrow.functor.optic import *
 

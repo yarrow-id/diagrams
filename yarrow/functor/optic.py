@@ -5,29 +5,32 @@ from yarrow.functor.functor import *
 class FrobeniusOpticFunctor(FrobeniusFunctor):
 
     @abstractmethod
-    def map_fwd_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
+    def map_fwd_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
         ...
 
     @abstractmethod
-    def map_rev_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
+    def map_rev_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
         ...
 
     @abstractmethod
-    def residuals(self, ops: Operations) -> IndexedCoproduct:
+    def residuals(self, ops: Operations) -> AbstractIndexedCoproduct:
         ...
 
     @abstractmethod
-    def map_fwd_operations(self, ops: Operations) -> Diagram:
+    def map_fwd_operations(self, ops: Operations) -> AbstractDiagram:
         ...
 
     @abstractmethod
-    def map_rev_operations(self, ops: Operations) -> Diagram:
+    def map_rev_operations(self, ops: Operations) -> AbstractDiagram:
         ...
 
     ############################################################################
     # Implementation
 
-    def map_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
+    def map_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
+        # look up concrete impl. of IndexedCoproduct
+        IndexedCoproduct = type(objects).IndexedCoproduct
+
         # interleave forward and reverse objects
         fwd = self.map_fwd_objects(objects)
         rev = self.map_rev_objects(objects)
@@ -52,7 +55,7 @@ class FrobeniusOpticFunctor(FrobeniusFunctor):
             values  = Fun(sigma_1, both.coproduct(i).table))
         return result
 
-    def map_operations(self, ops: Operations) -> Diagram:
+    def map_operations(self, ops: Operations) -> AbstractDiagram:
         # TODO: add diagram from notes 2023-06-12
         fwds, fwd_coarity = self.map_fwd_operations(ops)
         revs, rev_arity   = self.map_rev_operations(ops)
@@ -114,5 +117,5 @@ def lens_fwd(ops: Operations, copy_label) -> AbstractDiagram:
     # This is given by 
     raise NotImplementedError("TODO")
 
-def adapt_optic(optic: Diagram, Afwd, Arev, Bfwd, Brev):
+def adapt_optic(optic: AbstractDiagram, Afwd, Arev, Bfwd, Brev):
     raise NotImplementedError("TODO")

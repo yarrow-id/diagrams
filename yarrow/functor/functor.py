@@ -1,11 +1,9 @@
-from typing import List
 from abc import abstractmethod
-
-from yarrow.diagram import Diagram
-from yarrow.finite_function import AbstractFiniteFunction, FiniteFunction, bincount
-from yarrow.decompose.frobenius import frobenius_decomposition
-from yarrow.segmented.finite_function import AbstractIndexedCoproduct, IndexedCoproduct
+from yarrow.finite_function import AbstractFiniteFunction, bincount
+from yarrow.diagram import AbstractDiagram
+from yarrow.segmented.finite_function import AbstractIndexedCoproduct
 from yarrow.segmented.operations import Operations
+from yarrow.decompose.frobenius import frobenius_decomposition
 
 class Functor:
     """ A base class for implementing strict symmetric monoidal hypergraph functors """
@@ -27,7 +25,7 @@ class Functor:
         ...
 
     @abstractmethod
-    def map_arrow(self, d: Diagram) -> Diagram:
+    def map_arrow(self, d: AbstractDiagram) -> AbstractDiagram:
         """F.map_arrow(d) should apply the functor F to diagram d."""
         ...
 
@@ -57,13 +55,17 @@ def map_half_spider(swn: AbstractIndexedCoproduct, f: AbstractFiniteFunction):
     # swn = object_map(wn)
     return swn.sources.injections(f)
 
-def decomposition_to_operations(d: 'Diagram'):
+def decomposition_to_operations(d: 'AbstractDiagram'):
     """ Get the array of operations (and their types) from a Frobenius
     decomposition.  """
     # NOTE: it's *very* important that d is a frobenius decomposition, since we
     # directly use the maps d.G.wi and d.G.wo in the result.
     Fun = d._Fun
     Array = Fun._Array
+
+    # A concrete Fun implementation knows what its IndexedCoproduct class is;
+    # see concrete modules yarrow.numpy and yarrow.cupy for details!
+    IndexedCoproduct = Fun.IndexedCoproduct
 
     s_type = IndexedCoproduct(
         sources = Fun(None, bincount(d.G.xi).table),
@@ -81,10 +83,11 @@ class FrobeniusFunctor(Functor):
     which should map a tensoring of generators to a tensoring of diagrams.
     """
     @abstractmethod
-    def map_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
+    def map_objects(self, objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
         ...
 
-    def map_arrow(self, d: Diagram) -> Diagram:
+    def map_arrow(self, d: AbstractDiagram) -> AbstractDiagram:
+        Diagram = type(d)
         d = frobenius_decomposition(d)
         ops = decomposition_to_operations(d)
 
@@ -108,7 +111,7 @@ class FrobeniusFunctor(Functor):
         return (sx >> (i @ h) >> yt)
 
     @abstractmethod
-    def map_operations(self, ops: Operations) -> Diagram:
+    def map_operations(self, ops: Operations) -> AbstractDiagram:
         """Given an array of generating operations
 
             xn : X → Σ₁
@@ -127,10 +130,12 @@ class FrobeniusFunctor(Functor):
 ################################################################################
 # Built-in functors, supplied as examples.
 
-def identity_object_map(objects: AbstractFiniteFunction) -> IndexedCoproduct:
+def identity_object_map(objects: AbstractFiniteFunction) -> AbstractIndexedCoproduct:
     """ The object map of the identity functor """
     Fun = type(objects)
     Array = objects._Array
+
+    IndexedCoproduct = Fun.IndexedCoproduct
 
     # TODO: write a test for this!
     targets_codomain = None if objects.target is None else objects.target + 1
@@ -141,10 +146,10 @@ def identity_object_map(objects: AbstractFiniteFunction) -> IndexedCoproduct:
 class Identity(Functor):
     """ The identity functor, implemented by actually just returning the same
     diagram """
-    def map_objects(self, objects):
+    def map_objects(self, objects) -> AbstractIndexedCoproduct:
         return identity_object_map(objects)
         
-    def map_arrow(self, d: Diagram):
+    def map_arrow(self, d: AbstractDiagram) -> AbstractDiagram:
         return d
 
 class FrobeniusIdentity(FrobeniusFunctor):
@@ -158,5 +163,7 @@ class FrobeniusIdentity(FrobeniusFunctor):
     def map_objects(self, objects: AbstractFiniteFunction):
         return identity_object_map(objects)
 
-    def map_operations(self, ops: Operations) -> Diagram:
+    def map_operations(self, ops: Operations) -> AbstractDiagram:
+        # look up concrete Diagram type from the FiniteFunction
+        Diagram = type(ops.xn).Diagram
         return Diagram.tensor_operations(ops)

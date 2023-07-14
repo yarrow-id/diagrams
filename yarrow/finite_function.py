@@ -37,7 +37,7 @@ FiniteFunction(6, [0 1 2 3 4 5 5 5 5 5])
 """
 
 from typing import List
-import yarrow.array.numpy as numpy
+# import yarrow.array.numpy as numpy
 
 DTYPE='int64'
 
@@ -332,7 +332,7 @@ class AbstractFiniteFunction:
         offsets = cls._Array.zeros(len(targets) + 1, dtype=type(fs[0].source))
         offsets[1:] = cls._Array.cumsum(targets) # exclusive scan
         table = cls._Array.concatenate([f.table + offset for f, offset in zip(fs, offsets[:-1])])
-        return FiniteFunction(offsets[-1], table)
+        return cls(offsets[-1], table)
 
 
     ################################################################################
@@ -372,10 +372,6 @@ class AbstractFiniteFunction:
         cls = type(s)
         return cls(p[-1], r + cls._Array.repeat(p[a.table], k.table))
 
-
-class FiniteFunction(AbstractFiniteFunction):
-    """ Finite functions backed by numpy arrays """
-    _Array = numpy
 
 def argsort(f: AbstractFiniteFunction):
     """ Applies a stable 'argsort' to the underlying array of a finite function.

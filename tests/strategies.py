@@ -1,12 +1,8 @@
 """ Hypothesis strategies for FiniteFunctions """
 import numpy as np
 from yarrow.array import numpy
-from yarrow.finite_function import FiniteFunction
-from yarrow.bipartite_multigraph import BipartiteMultigraph
-from yarrow.diagram import Diagram
-
+from yarrow import FiniteFunction, BipartiteMultigraph, Diagram, SegmentedFiniteFunction, IndexedCoproduct
 from yarrow.segmented.operations import Operations
-from yarrow.segmented.finite_function import SegmentedFiniteFunction, IndexedCoproduct
 
 import hypothesis.strategies as st
 

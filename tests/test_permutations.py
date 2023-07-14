@@ -1,8 +1,10 @@
 import numpy as np
 import unittest
 from hypothesis import given
-from yarrow.finite_function import FiniteFunction, argsort
 from tests.strategies import objects, adapted_function, finite_functions, permutations, parallel_permutations, parallel_arrows
+
+from yarrow.numpy import FiniteFunction
+from yarrow.finite_function import argsort
 
 from tests.util import sorts
 

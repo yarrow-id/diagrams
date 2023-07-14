@@ -61,7 +61,7 @@ class AbstractIndexedCoproduct:
     #   values = F_0 + F_1 + ... + F_{N-1}
     # we have
     #   ι_x ; value = F_i
-    def coproduct(self, x: FiniteFunction):
+    def coproduct(self, x: AbstractFiniteFunction):
         """ f.coproduct(x) computes an x-indexed coproduct of f. That is, if
 
         ``f = f₀ + f₁ + ... + fn``
@@ -76,7 +76,7 @@ class AbstractIndexedCoproduct:
         assert x.target == len(self.sources)
         return self.sources.injections(x) >> self.values
 
-    def map(self, x: FiniteFunction):
+    def map(self, x: AbstractFiniteFunction):
         """ Given a Coproduct of finite functions
         ``Σ_{i ∈ X} f_i : Σ_{i ∈ X} A_i → B``
         and a finite function
@@ -87,13 +87,6 @@ class AbstractIndexedCoproduct:
         return type(self)(
             sources = x >> self.sources,
             values = self.coproduct(x))
-
-class IndexedCoproduct(AbstractIndexedCoproduct):
-    _Fun   = FiniteFunction
-    _Array = FiniteFunction._Array
-
-
-
 
 
 @dataclass
@@ -173,7 +166,7 @@ class AbstractSegmentedFiniteFunction:
         # number of segments in the array
         return self.sources.source
 
-    def slice(self, x: FiniteFunction):
+    def slice(self, x: AbstractFiniteFunction):
         # check indexing function won't go out of bounds
         assert x.target == self.N
         return self.sources.injections(x) >> self.values
@@ -184,25 +177,20 @@ class AbstractSegmentedFiniteFunction:
     #   values = F_0 + F_1 + ... + F_{N-1}
     # we have
     #   ι_x ; value = F_i
-    def coproduct(self, x: FiniteFunction):
+    def coproduct(self, x: AbstractFiniteFunction):
         """ sff.coproduct(x) computes an x-indexed coproduct of sff """
         # check all targets are the same
         assert self._is_coproduct
 
         # TODO FIXME: this is a hack, and is totally broken for "empty" coproducts, which MUST have target specified!
         target = 0 if self.targets.source == 0 else self.targets(0)
-        return FiniteFunction(target, self.slice(x).table)
+        return type(x)(target, self.slice(x).table)
 
-    def tensor(self, x: FiniteFunction):
+    def tensor(self, x: AbstractFiniteFunction):
         """ sff.coproduct(x) computes an x-indexed *tensor* product of sff """
         table = self.slice(x).table
         p = self._Array.zeros(x.source + 1, dtype='int64')
         # p[1:] = self._Array.cumsum(self.targets.table[x.table])
         p[1:] = self._Array.cumsum(self.targets.table[x.table])
         z = self._Array.repeat(p[:-1], self.sources.table[x.table])
-        return FiniteFunction(p[-1], table + z)
-
-
-class SegmentedFiniteFunction(AbstractSegmentedFiniteFunction):
-    _Array = numpy
-    _Fun   = FiniteFunction
+        return type(x)(p[-1], table + z)
