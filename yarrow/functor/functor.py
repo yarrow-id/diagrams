@@ -84,10 +84,13 @@ class FrobeniusFunctor(Functor):
     def map_objects(self, objects: AbstractFiniteFunction) -> IndexedCoproduct:
         ...
 
-    def map_arrow(self, d: Diagram):
+    def map_arrow(self, d: Diagram) -> Diagram:
         d = frobenius_decomposition(d)
         ops = decomposition_to_operations(d)
 
+        # swn = F(G(wn))
+        # ... is the IndexedCoproduct resulting from applying the functor to the
+        # wire labeling d.G.wn
         swn = self.map_objects(d.G.wn)
         h = self.map_operations(ops)
 
@@ -96,7 +99,7 @@ class FrobeniusFunctor(Functor):
 
         xn = d._Fun.initial(h.G.xn.target, dtype=h.G.xn.table.dtype)
 
-        # build the morphisms (s ; x) ; (id × h) ; (z ; t) from Proposition B.1
+        # build the morphisms (s ; x) ; (id ● h) ; (y ; t) from Proposition B.1
         i = Diagram.identity(swn.values, xn)
         # note: we use the source/target maps of i in constructing those of sx, yt
         # to avoid constructing another array with the same data.
