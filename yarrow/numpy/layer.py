@@ -12,13 +12,9 @@ import scipy.sparse as sp
 from yarrow.numpy import *
 
 def make_sparse(s: FiniteFunction, t: FiniteFunction):
-    """Given two finite functions::
-
-      s : E → A
-      t : E → B
-
-    representing a bipartite graph ``A → B``,
-    return the sparse ``B×A`` matrix representing the graph
+    """Given finite functions ``s : E → A`` and ``t : E → B``
+    representing a bipartite graph ``G : A → B``,
+    return the sparse ``B×A`` adjacency matrix representing ``G``.
     """
     assert s.source == t.source
     N = s.source
@@ -29,9 +25,8 @@ def make_sparse(s: FiniteFunction, t: FiniteFunction):
 
 def operation_adjacency(d: Diagram):
     """ Construct the underlying graph of operation adjacency from a diagram.
-    An operation ``x`` has an outgoing edge to an operation ``y`` if there is a path going through a single ■-node::
-
-        (○, x) → (■, ·) → (○, y)
+    An operation ``x`` is adjacent to an operation ``y`` if there is a directed
+    path from ``x`` to ``y`` going through a single ■-node.
     """
     # construct the adjacency matrix for generators
     Mi = make_sparse(d.G.wi, d.G.xi)
@@ -51,10 +46,12 @@ def operation_adjacency(d: Diagram):
 #  layer   0   1   2
 #
 def kahn(adjacency: sp.csr_array):
-    """ A version of Kahn's algorithm which assigns to ..
+    """ A version of Kahn's algorithm which assigns a *layering* to each ○-node,
+    but where multiple nodes can have the same layering.
+
     Returns a pair of arrays ``(order, visited)``.
     ``order[v]`` is a natural number indicating the computed ordering of node ``v``,
-    and ``visited[v]`` is 1 if and only if ``v`` was visited.
+    and ``visited[v]`` is 1 if and only if ``v`` was visited while traversing the graph.
 
     If not all vertices were visited, the graph had a cycle.
     """
@@ -110,9 +107,9 @@ def kahn(adjacency: sp.csr_array):
 
 def layer(d: Diagram):
     """ Assign a *layering* to a diagram ``d``.
-        This computes a FiniteFunction ``f : X → k``,
-        mapping ○-nodes of ``d.G`` to a natural number in the ``range(0, k)``.
-        This mapping is 'dense' in the sense that for each ``i ∈ {0..k}``,
+        This computes a FiniteFunction ``f : G(X) → K``,
+        mapping ○-nodes of ``d.G`` to a natural number in the ``range(0, K)``.
+        This mapping is 'dense' in the sense that for each ``i ∈ {0..K}``,
         there is always some ○-node v for which ``f(v) = i``.
     """
     # (Partially) topologically sort it using a kahn-ish algorithm
