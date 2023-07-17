@@ -8,12 +8,15 @@ the same layering.
 """
 import numpy as np
 import scipy.sparse as sp
+
 from yarrow.numpy import *
 
 def make_sparse(s: FiniteFunction, t: FiniteFunction):
     """Given two finite functions::
+
       s : E → A
       t : E → B
+
     representing a bipartite graph ``A → B``,
     return the sparse ``B×A`` matrix representing the graph
     """
@@ -27,6 +30,7 @@ def make_sparse(s: FiniteFunction, t: FiniteFunction):
 def operation_adjacency(d: Diagram):
     """ Construct the underlying graph of operation adjacency from a diagram.
     An operation ``x`` has an outgoing edge to an operation ``y`` if there is a path going through a single ■-node::
+
         (○, x) → (■, ·) → (○, y)
     """
     # construct the adjacency matrix for generators
